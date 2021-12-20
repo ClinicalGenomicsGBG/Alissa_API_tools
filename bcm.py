@@ -169,6 +169,30 @@ def validate_request(user_name, request: OrderRequest) -> Response:
 
 
 if __name__  == '__main__':
+    validate_config()
+
+    sample_id = 'DNA123'
+
+    patient = Patient(sample_id)
+    if not patient.exists():
+        response = patient.create()
+    # else:
+    #     continue
+
+    file_path = '/path/to/vcf.vcf'
+    file_name = os.path.basename(file_path)
+
+    file_list = FileList()
+    if file_name in file_list:
+        continue
+    else:
+        # Upload logic
+
+
+
+
+
+if __name__  == '__main__':
     
     try:
         args = sys.argv

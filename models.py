@@ -31,8 +31,8 @@ class FileInfo:
 class Patient:
     def __init__(self,accessionNumber,comments,familyIdentifier,folderName,gender):
         self.accessionNumber = accessionNumber
-        self.comments = comments
-        self.familyIdentifier = familyIdentifier
+        #self.comments = comments
+        #self.familyIdentifier = familyIdentifier
         self.folderName = folderName
         self.gender = gender
 
@@ -48,4 +48,3 @@ class Response(object):
         self.status_message = status_message
         self.accession = accession
         self.lab_result_id = lab_result_id
-        

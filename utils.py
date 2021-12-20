@@ -1,3 +1,5 @@
+# NOTE: NO need to use this utils.py, mostly fluff
+
 import json
 import time
 import configparser

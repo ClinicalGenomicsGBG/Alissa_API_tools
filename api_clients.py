@@ -57,7 +57,7 @@ class PatientPublicApiConrollerClient(BasePublicApiConrollerClient):
         response.raise_for_status()
         patient_list = utils.convert_json_to_obj(response.text)
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
-    
+
     def create_patient(self,patient : Patient):
         response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
         response.raise_for_status()
@@ -67,9 +67,9 @@ class PatientPublicApiConrollerClient(BasePublicApiConrollerClient):
         return 
 
 
-class FolderPublicApiConrollerClient(BasePublicApiConrollerClient):
-    def __init__(self, crypto_service: OAuth2Client):
-        super().__init__(crypto_service)
+# class FolderPublicApiConrollerClient(BasePublicApiConrollerClient):
+#     def __init__(self, crypto_service: OAuth2Client):
+#         super().__init__(crypto_service)
 
     
 
