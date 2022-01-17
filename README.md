@@ -13,4 +13,16 @@ module load anaconda2
 source activate wopr
 ```
 
-conda create --name myclone --clone myenv
+For testing purposes, I created a clone of the WOPR conda environment that comprises additional environmental variables (done as sudo).
+
+```
+sudo su
+module load anaconda2
+conda create --name wopr_alissa --clone wopr
+source activate wopr_alissa
+python
+import os
+os.environ['ALISSA_USERNAME'] = 'xx' #replace xx by username
+os.environ['ALISSA_PASSWORD'] = 'xx' #replace xx by password
+os.environ['ALISSA_TOKEN_URL'] = 'xx' #replace xx by url
+```
