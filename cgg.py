@@ -28,7 +28,7 @@ class OAuth2Client:
         if self.session.authorized:
             self._token = response['token_type'] + " " + response['access_token']
 
-        self.is_valid_toke(self._token)
+        self.is_valid_token(self._token)
         return self._token
 
     def is_valid_token(self) -> bool:
