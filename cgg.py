@@ -33,3 +33,12 @@ class OAuth2Client:
 
     def is_valid_token(self) -> bool:
         return self.session.authorized
+    
+def main():
+    oauth2_client = OAuth2Client()
+    #something with fetch_token:
+    #return self.oauth2_client.fetch_token() ?
+    #print #Does it print by default?
+    
+if __name__ == '__main__':
+    main()
