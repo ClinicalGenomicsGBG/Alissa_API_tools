@@ -1,10 +1,9 @@
 import passwords
 
+from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
 
 # Token generation
-from requests_oauthlib import OAuth2Session
-
 class OAuth2Client:
     def __init__(self):
         self.username = passwords.alissa.username
