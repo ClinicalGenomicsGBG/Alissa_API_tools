@@ -1,5 +1,7 @@
 import passwords
 
+from oauthlib.oauth2 import LegacyApplicationClient
+
 # Token generation
 from requests_oauthlib import OAuth2Session
 
@@ -36,9 +38,9 @@ class OAuth2Client:
     
 def main():
     oauth2_client = OAuth2Client()
-    #something with fetch_token:
-    return self.oauth2_client.fetch_token() #is that enough?
-    #print #Does it print by default?
+    #Do something to print the token or show that it worked.
+    return oauth2_client.fetch_token
+    return oauth2_client.is_valid_token()    
     
 if __name__ == '__main__':
     main()
