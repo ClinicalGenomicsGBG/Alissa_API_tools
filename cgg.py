@@ -37,7 +37,7 @@ class OAuth2Client:
 def main():
     oauth2_client = OAuth2Client()
     #something with fetch_token:
-    #return self.oauth2_client.fetch_token() ?
+    return self.oauth2_client.fetch_token() #is that enough?
     #print #Does it print by default?
     
 if __name__ == '__main__':
