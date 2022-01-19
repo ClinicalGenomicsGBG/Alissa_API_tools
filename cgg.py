@@ -29,7 +29,6 @@ class OAuth2Client:
         if self.session.authorized:
             self._token = response['token_type'] + " " + response['access_token']
 
-        self.is_valid_token(self._token)
         return self._token
 
     def is_valid_token(self) -> bool:
@@ -38,8 +37,11 @@ class OAuth2Client:
 def main():
     oauth2_client = OAuth2Client()
     oauth2_client.fetch_token()
-    print(oauth2_client._token)
-    print(oauth2_client.session.authorized)
+    
+    if oauth2_client.session.authorized:
+        print(oauth2_client._token)
+    else:
+        print('No token was generated. Investigate!')
    
 if __name__ == '__main__':
     main()
