@@ -38,8 +38,10 @@ def main():
     oauth2_client = OAuth2Client()
     oauth2_client.fetch_token()
     
-    if oauth2_client.session.authorized:
-        print(oauth2_client._token)
+    if oauth2_client.is_valid_token():
+        token = oauth2_client._token
+        print(token)
+
     else:
         print('No token was generated. Investigate!')
    
