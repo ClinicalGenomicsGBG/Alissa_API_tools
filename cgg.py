@@ -34,7 +34,7 @@ class OAuth2Client:
     def is_valid_token(self) -> bool:
         return self.session.authorized
     
- class cggPatient:
+class cggPatient:
     def __init__(self, token, patient_id):
         self.token = token
         self.patient_id = patient_id #Can these be defined as arguments of cggPatien?
