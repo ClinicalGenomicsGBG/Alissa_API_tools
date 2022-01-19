@@ -37,9 +37,9 @@ class OAuth2Client:
     
 def main():
     oauth2_client = OAuth2Client()
-    #Do something to print the token or show that it worked.
-    return oauth2_client.fetch_token
-    return oauth2_client.is_valid_token()    
-    
+    print(oauth2_client._token)
+    print(oauth2_client.session.authorized)
+   
 if __name__ == '__main__':
+    print('Success')
     main()
