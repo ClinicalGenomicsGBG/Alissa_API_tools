@@ -34,6 +34,20 @@ class OAuth2Client:
     def is_valid_token(self) -> bool:
         return self.session.authorized
     
+ class cggPatient:
+    def __init__(self, token, patient_id):
+        self.token = token
+        self.patient_id = patient_id
+
+    def exist(self):
+        response = requests.get(self.resource_url, params={'accessionNumber': name} , headers = {'Authorization' : self.create_authorization_header_contents()})
+        return response.returncode == 200
+
+#    def create(self, folder_name, gender='Unknown'):
+#
+#        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
+#        response.raise_for_status()
+    
 def main():
     oauth2_client = OAuth2Client()
     oauth2_client.fetch_token()
