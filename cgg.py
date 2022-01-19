@@ -37,10 +37,16 @@ class OAuth2Client:
  class cggPatient:
     def __init__(self, token, patient_id):
         self.token = token
-        self.patient_id = patient_id
+        self.patient_id = patient_id #Can these be defined as arguments of cggPatien?
+        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
+
+#Does the function below have to be repeated? Can it be defined in the main function instead? Or is it possible to save a token instead? Perhaps it is better to ask for a new token at every action, in case that the token expires...        
+#    def create_authorization_header_contents(self):
+#        return self.oauth2_client.fetch_token()        
 
     def exist(self):
-        response = requests.get(self.resource_url, params={'accessionNumber': name} , headers = {'Authorization' : self.create_authorization_header_contents()})
+        #Where does "name" come from? I am trying to replace it by patient_id.
+        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
         return response.returncode == 200
 
 #    def create(self, folder_name, gender='Unknown'):
@@ -55,6 +61,9 @@ def main():
     if oauth2_client.is_valid_token():
         token = oauth2_client._token
         print(token)
+        patient_id = "test-patient-20220119_1"
+        patient = cggPatient(token,patient_id)
+        patient.exist()
 
     else:
         print('No token was generated. Investigate!')
