@@ -59,10 +59,10 @@ def main():
     oauth2_client.fetch_token()
     
     if oauth2_client.is_valid_token():
-        token = oauth2_client._token
-        print(token)
-        patient_id = "test-patient-20220119_1"
-        patient = cggPatient(token,patient_id)
+        newtoken = oauth2_client._token
+        print(newtoken)
+        patient_id = "test-patient-20220119_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        patient = cggPatient(newtoken,patient_id)
         patient.exist()
 
     else:
