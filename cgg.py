@@ -48,7 +48,7 @@ class cggPatient:
     def exist(self):
         #Where does "name" come from? I am trying to replace it by patient_id.
         response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
-        return response.returncode == 200
+        return response.status_code == 200
 
 #    def create(self, folder_name, gender='Unknown'):
 #
