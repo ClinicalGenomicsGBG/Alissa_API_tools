@@ -40,17 +40,14 @@ class cggPatient:
         self.token = token
         self.patient_id = patient_id #Can these be defined as arguments of cggPatien?
         self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
-
-#Does the function below have to be repeated? Can it be defined in the main function instead? Or is it possible to save a token instead? Perhaps it is better to ask for a new token at every action, in case that the token expires...        
-#    def create_authorization_header_contents(self):
-#        return self.oauth2_client.fetch_token()        
+        self.folder_name = folder_name
 
     def exist(self):
-        #Where does "name" come from? I am trying to replace it by patient_id.
         response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
         return response.status_code == 200
+        #Comment: in the code from Agilent this is used to check whether there is already a patient called like that. It might be good to check... (see api_clients.py and bcm.py)
 
-#    def create(self, folder_name, gender='Unknown'):
+    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
 #
 #        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
 #        response.raise_for_status()
@@ -65,6 +62,9 @@ def main():
         patient_id = "test-patient-20220119_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
         patient = cggPatient(newtoken,patient_id)
         patient.exist()
+        folder_name = "KG" #TODO get this information from SLIMS
+        #patient_gender sctx.slims_info['gender']
+        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
         print('No token was generated. Investigate!')
