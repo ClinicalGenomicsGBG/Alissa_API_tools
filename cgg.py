@@ -1,4 +1,5 @@
 import passwords
+import requests
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
