@@ -36,19 +36,19 @@ class OAuth2Client:
     def is_valid_token(self) -> bool:
         return self.session.authorized
     
-class cggPatient:
-    def __init__(self, token, patient_id):
-        self.token = token
-        self.patient_id = patient_id #Can these be defined as arguments of cggPatien?
-        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
-        self.folder_name = folder_name
-
-    def exist(self):
-        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
-        return response.status_code == 200
-        #Comment: in the code from Agilent this is used to check whether there is already a patient called like that. It might be good to check... (see api_clients.py and bcm.py)
-
-    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
+#class cggPatient:
+#    def __init__(self, token, patient_id):
+#        self.token = token
+#        self.patient_id = patient_id #Can these be defined as arguments of cggPatien?
+#        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
+#        self.folder_name = folder_name
+#
+#    def exist(self):
+#        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
+#        return response.status_code == 200
+#        #Comment: in the code from Agilent this is used to check whether there is already a patient called like that. It might be good to check... (see api_clients.py and bcm.py)
+#
+#    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
 #
 #        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
 #        response.raise_for_status()
@@ -60,12 +60,12 @@ def main():
     if oauth2_client.is_valid_token():
         newtoken = oauth2_client._token
         print(newtoken)
-        patient_id = "test-patient-20220119_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
-        patient = cggPatient(newtoken,patient_id)
-        patient.exist()
-        folder_name = "KG" #TODO get this information from SLIMS
-        #patient_gender sctx.slims_info['gender']
-        #Location and name of VCF: Sctx.snv_cnv_vcf_path
+#        patient_id = "test-patient-20220119_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+#        patient = cggPatient(newtoken,patient_id)
+#        patient.exist()
+#        folder_name = "KG" #TODO get this information from SLIMS
+#        #patient_gender sctx.slims_info['gender']
+#        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
         print('No token was generated. Investigate!')
