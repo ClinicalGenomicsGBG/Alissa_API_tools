@@ -36,13 +36,16 @@ class OAuth2Client:
     def is_valid_token(self) -> bool:
         return self.session.authorized
     
-#class cggPatient:
-#    def __init__(self, token, patient_id):
-#        self.token = token
-#        self.patient_id = patient_id #Can these be defined as arguments of cggPatien?
-#        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
-#        self.folder_name = folder_name
-#
+class cggPatient:
+    def __init__(self, token, patient_id, folder_name, sex, accession_number):
+    #Should all of these attributes be stored there or can they go somewhere else, e.g. in functions?
+        self.token = token
+        self.patient_id = patient_id
+        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
+        self.folder_name = folder_name
+        self.sex = sex #Default could be set to "Unknown"
+        self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
+
 #    def exist(self):
 #        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
 #        return response.status_code == 200
@@ -52,6 +55,26 @@ class OAuth2Client:
 #
 #        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
 #        response.raise_for_status()
+
+
+
+#
+#
+# Patient query
+#cf api_client.py from row 55, function get_patient_by_name in class PatientPublicApiConrollerClient
+#and in bcm.py, from row 85. And then also at the bottom of bcm.py, from row 76 (not sure how that part works).
+#
+# VCF/file query
+#cf bcm.py from row 42 - Check if data file already exists in the system. Function get_data_file_by_Name from api_client.py
+#
+# Patient post
+#cf bcm.py from row 84; functions: get_patient_by_name, create_patient (caution! The create_patient from api_client.py, not from bcm.py) (why are there two functions with the same name? Not practical).
+#
+# VCF post
+#cf bcm.py from row 66 - Upload VCF file. Function add_data_file from api_client.py.
+#cf bcm.py from row 109 - Attach VCF file to a patient. Function create_lab_result from api_client.py. 
+
+
     
 def main():
     oauth2_client = OAuth2Client()
