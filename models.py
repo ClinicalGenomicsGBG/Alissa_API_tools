@@ -1,6 +1,7 @@
 from typing import Text
 
 #The class PatientRequest is not used elsewhere (as far as I can see!).
+#See bcm.py row 92 patient = Patient(...) - confusing, because it refers to "sex" that is not defined in class Patient ("gender" is used).
 class PatientRequest(object):
     def __init__(self,accession,sex,family_id,comments,sample):
         self.accession = accession
