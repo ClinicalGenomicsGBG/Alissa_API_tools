@@ -1,6 +1,6 @@
 from typing import Text
 
-
+#The class PatientRequest is not used elsewhere (as far as I can see!).
 class PatientRequest(object):
     def __init__(self,accession,sex,family_id,comments,sample):
         self.accession = accession
