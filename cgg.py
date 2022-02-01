@@ -49,12 +49,9 @@ class cggPatient:
 
     def exist(self):
         response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
-        print(response)
-        response.raise_for_status()
         patient_list = utils.convert_json_to_obj(response.text)
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
 #        return response.status_code == 200
-#        #Comment: in the code from Agilent this is used to check whether there is already a patient called like that. It might be good to check... (see api_clients.py and bcm.py)
 #
 #    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
 #
@@ -88,12 +85,15 @@ def main():
     if oauth2_client.is_valid_token():
         newtoken = oauth2_client._token
         print(newtoken)
-        patient_id = "test-patient_220105_1000" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        patient_id = "test-patient_220105_10" #TODO get this information from SLIMS (most likely: sctx.sample_name)
         folder_name = "Default" #TODO get this information from SLIMS
         patient_sex = "Female" #sctx.slims_info['gender']
         accession_number = "test-patient_220105_1000"
         patient = cggPatient(newtoken,patient_id,folder_name, patient_sex, accession_number)
-        patient.exist()
+
+        patient_by_accession = patient.exist()
+        print(patient_by_accession) if patient_by_accession is not None else print("Patient does not exist")
+
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
