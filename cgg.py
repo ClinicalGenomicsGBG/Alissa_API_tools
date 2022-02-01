@@ -1,6 +1,7 @@
 import passwords
 import requests
 import json
+import utils
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
@@ -46,8 +47,9 @@ class cggPatient:
         self.sex = sex #Default could be set to "Unknown"
         self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
 
-#    def exist(self):
-#        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
+    def exist(self):
+        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
+        print(response)
 #        return response.status_code == 200
 #        #Comment: in the code from Agilent this is used to check whether there is already a patient called like that. It might be good to check... (see api_clients.py and bcm.py)
 #
@@ -83,11 +85,12 @@ def main():
     if oauth2_client.is_valid_token():
         newtoken = oauth2_client._token
         print(newtoken)
-#        patient_id = "test-patient-20220119_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
-#        patient = cggPatient(newtoken,patient_id)
-#        patient.exist()
-#        folder_name = "KG" #TODO get this information from SLIMS
-#        #patient_gender sctx.slims_info['gender']
+        patient_id = "test-patient_220105_1000" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        folder_name = "Default" #TODO get this information from SLIMS
+        patient_sex = "Female" #sctx.slims_info['gender']
+        accession_number = "test-patient_220105_1000"
+        patient = cggPatient(newtoken,patient_id,folder_name, patient_sex, accession_number)
+        patient.exist()
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
