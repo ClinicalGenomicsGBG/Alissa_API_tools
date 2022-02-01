@@ -1,6 +1,7 @@
 from typing import Text
 
-
+#The class PatientRequest is not used elsewhere (as far as I can see!).
+#See bcm.py row 92 patient = Patient(...) - confusing, because it refers to "sex" that is not defined in class Patient ("gender" is used).
 class PatientRequest(object):
     def __init__(self,accession,sex,family_id,comments,sample):
         self.accession = accession
@@ -23,16 +24,16 @@ class FileInfo:
     def __init__(self,originalPath,originalName,currentPath,currentName,originalSize,currentSize):
         self.originalPath = originalPath
         self.originalName = originalName
-        self.originalSize = originalSize
-        self.currentPath = currentPath
-        self.currentName = currentName
+        self.originalSize = originalSize #not used in Agilent scripts - might be useful for us though (check size and chunk VCF)
+        self.currentPath = currentPath #not used in Agilent scripts
+        self.currentName = currentName #not used in Agilent scripts
         self.currentSize = currentSize
 
 class Patient:
     def __init__(self,accessionNumber,comments,familyIdentifier,folderName,gender):
         self.accessionNumber = accessionNumber
-        self.comments = comments
-        self.familyIdentifier = familyIdentifier
+        self.comments = comments #not used by us
+        self.familyIdentifier = familyIdentifier #not used by us
         self.folderName = folderName
         self.gender = gender
 
