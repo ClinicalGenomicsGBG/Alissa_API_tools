@@ -52,7 +52,7 @@ class cggPatient:
         patient_list = utils.convert_json_to_obj(response.text)
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
 #
-#    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
+#    def create(self, folder_name, sex='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
 #
 #        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
 #        response.raise_for_status() #If it succeeded, this should be "None".
