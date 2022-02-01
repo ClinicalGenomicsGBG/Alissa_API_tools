@@ -50,6 +50,9 @@ class cggPatient:
     def exist(self):
         response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
         print(response)
+        response.raise_for_status()
+        patient_list = utils.convert_json_to_obj(response.text)
+        return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
 #        return response.status_code == 200
 #        #Comment: in the code from Agilent this is used to check whether there is already a patient called like that. It might be good to check... (see api_clients.py and bcm.py)
 #
