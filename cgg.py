@@ -38,13 +38,13 @@ class OAuth2Client:
         return self.session.authorized
     
 class cggPatient:
-    def __init__(self, token, patient_id, folder_name, sex, accession_number):
+    def __init__(self, token, patient_id, folder_name, accession_number, sex='Unknown'):
     #Should all of these attributes be stored there or can they go somewhere else, e.g. in functions?
         self.token = token
         self.patient_id = patient_id
         self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
         self.folder_name = folder_name
-        self.sex = sex #Default could be set to "Unknown"
+        self.sex = sex
         self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
 
     def exist(self):
@@ -52,7 +52,7 @@ class cggPatient:
         patient_list = utils.convert_json_to_obj(response.text)
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
 #
-#    def create(self, folder_name, sex='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
+#    def create(self):
 #
 #        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
 #        response.raise_for_status() #If it succeeded, this should be "None".
@@ -88,7 +88,7 @@ def main():
         folder_name = "Default" #TODO get this information from SLIMS
         patient_sex = "Female" #sctx.slims_info['gender']
         accession_number = "test-patient_220105_1000"
-        patient = cggPatient(newtoken,patient_id,folder_name, patient_sex, accession_number)
+        patient = cggPatient(newtoken, patient_id, folder_name, accession_number, patient_sex)
 
         patient_by_accession = patient.exist()
         #TODO in the future: depending on whether the patient already exists or not, behavior (e.g. creating a patient) might differ.
