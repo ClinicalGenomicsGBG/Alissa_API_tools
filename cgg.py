@@ -56,7 +56,7 @@ class cggPatient:
 #    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
 #
 #        response = requests.post(self.resource_url, data = json.dumps(patient.__dict__), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
-#        response.raise_for_status()
+#        response.raise_for_status() #If it succeeded, this should be "None".
 
 
 
