@@ -55,11 +55,11 @@ class cggPatient:
     def create(self):
          #TODO find a good way to store the required information. It feels redundant to create a dictionnary with the different "self" attributes. Perhaps I do not need to define them as self but just in the dictionnary? (If I do not need them for "exist()", i.e. everything but patient_id). See how it is done in tertiary.py too.
         json_data = {
-	    accessionNumber: accession_number,
-            folderName: folder_name,
-            gender: sex 
+	    'accessionNumber': self.accession_number,
+            'folderName': self.folder_name,
+            'gender': self.sex 
         }
-        response = requests.post(self.resource_url, data = json.dumps(json_data), headers = {'Authorization' : self.create_authorization_header_contents(),'Content-Type': 'application/json'})
+        response = requests.post(self.resource_url, data = json.dumps(json_data), headers = {'Authorization' : self.token,'Content-Type': 'application/json'})
         response.raise_for_status() #If it succeeded, this should be "None".
 
 
