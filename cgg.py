@@ -51,7 +51,6 @@ class cggPatient:
         response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
         patient_list = utils.convert_json_to_obj(response.text)
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
-#        return response.status_code == 200
 #
 #    def create(self, folder_name, gender='Unknown'): #gender is an optional parameter. If no value is given, it will be set to "Unknown"
 #
@@ -92,6 +91,7 @@ def main():
         patient = cggPatient(newtoken,patient_id,folder_name, patient_sex, accession_number)
 
         patient_by_accession = patient.exist()
+        #TODO in the future: depending on whether the patient already exists or not, behavior (e.g. creating a patient) might differ.
         print(patient_by_accession) if patient_by_accession is not None else print("Patient does not exist")
 
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
