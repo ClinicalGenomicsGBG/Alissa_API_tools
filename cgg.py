@@ -54,9 +54,9 @@ class cggPatient:
 
     def create(self):
         json_data = {
-	    'accessionNumber': self.accession_number,
+            'accessionNumber': self.accession_number,
             'folderName': self.folder_name,
-            'gender': self.sex,
+            'gender': self.sex
 #            'comments': 'None',
 #            'familyIdentifier': 'FID' 
         }
