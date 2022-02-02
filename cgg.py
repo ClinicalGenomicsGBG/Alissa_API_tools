@@ -53,16 +53,15 @@ class cggPatient:
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
 
     def create(self):
-         #TODO find a good way to store the required information. It feels redundant to create a dictionnary with the different "self" attributes. Perhaps I do not need to define them as self but just in the dictionnary? (If I do not need them for "exist()", i.e. everything but patient_id). See how it is done in tertiary.py too.
         json_data = {
 	    'accessionNumber': self.accession_number,
             'folderName': self.folder_name,
-            'gender': self.sex 
+            'gender': self.sex,
+#            'comments': 'None',
+#            'familyIdentifier': 'FID' 
         }
         response = requests.post(self.resource_url, data = json.dumps(json_data), headers = {'Authorization' : self.token,'Content-Type': 'application/json'})
-        response.raise_for_status() #If it succeeded, this should be "None".
-
-
+        response.raise_for_status() #If it succeeds, this should return "None".
 
 #
 #
@@ -100,6 +99,7 @@ def main():
         print(patient_by_accession) if patient_by_accession is not None else print("Patient does not exist")
 
         patient.create() 
+
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
