@@ -88,10 +88,10 @@ def main():
     if oauth2_client.is_valid_token():
         newtoken = oauth2_client._token
         print(newtoken)
-        patient_id = "test-patient_220105_10" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        patient_id = "test-patient_220203" #TODO get this information from SLIMS (most likely: sctx.sample_name)
         folder_name = "Default" #TODO get this information from SLIMS
         patient_sex = "Female" #sctx.slims_info['gender']
-        accession_number = "test-patient_220105_1000"
+        accession_number = "test-patient_220203"
         patient = cggPatient(newtoken, patient_id, folder_name, accession_number, patient_sex)
 
         patient_by_accession = patient.exist()
