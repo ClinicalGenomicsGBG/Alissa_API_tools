@@ -38,7 +38,7 @@ class OAuth2Client:
         return self.session.authorized
     
 class cggPatient:
-    def __init__(self, token, patient_id, folder_name, accession_number, sex='Unknown'):
+    def __init__(self, token, patient_id, accession_number, folder_name='Default', sex='Unknown', comments="test", family_id='test'):
     #Should all of these attributes be stored there or can they go somewhere else, e.g. in functions?
         self.token = token
         self.patient_id = patient_id
@@ -46,6 +46,8 @@ class cggPatient:
         self.folder_name = folder_name
         self.sex = sex
         self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
+        self.comments = comments
+        self.family_id = family_id
 
     def exist(self):
         response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
@@ -55,10 +57,10 @@ class cggPatient:
     def create(self):
         json_data = {
             'accessionNumber': self.accession_number,
+            'comments': self.comments,
+            'familyIdentifier': self.family_id, 
             'folderName': self.folder_name,
             'gender': self.sex
-#            'comments': 'None',
-#            'familyIdentifier': 'FID' 
         }
         response = requests.post(self.resource_url, data = json.dumps(json_data), headers = {'Authorization' : self.token,'Content-Type': 'application/json'})
         response.raise_for_status() #If it succeeds, this should return "None".
