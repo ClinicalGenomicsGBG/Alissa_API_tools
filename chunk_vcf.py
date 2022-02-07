@@ -27,7 +27,6 @@ elif original_size >= 250000000:
     vcf2 = original_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
 
     #Split the VCF.
-    #TODO possibly: I could perhaps change the command_split_vcf1/2 to have only the list of contigs that varies.
     command_compress = ["bgzip", "-c"]
 
     command_split_vcf1 = ["vcftools", "--gzvcf", path_to_original_vcf,
@@ -65,11 +64,11 @@ elif original_size >= 250000000:
     #Check that the new sizes are less than 250000000. If not: print error message. At the moment, manual intervention will be needed in such case, to decide how to split the VCFs.
     size_vcf1 = os.path.getsize(vcf1)
     size_vcf2 = os.path.getsize(vcf2)
-    print(size_vcf1)
-    print(size_vcf2)
+    if size_vcf1 >= 250000000 or size_vcf2 >= 250000000:
+        print(f'One of the files is still larger than 250M. Investigate. Files to control: {vcf1} and {vcf2}.')
+    else:
+        VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
+        VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
 
-#    VCF1 = FileInfo()
-#    VCF2 = FileInfo()
-#
 else:
     VCF = FileInfo(path_to_original_vcf, original_name)
