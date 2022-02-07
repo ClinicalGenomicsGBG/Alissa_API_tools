@@ -17,7 +17,7 @@ original_size = os.path.getsize(path_to_original_vcf)
 basename = original_name.replace('.vcf.gz','')
 original_folder = os.path.dirname(path_to_original_vcf)
 
-#TODO later: instead of printing error messages, exit the process.
+#TODO possibly later: instead of printing error messages, exit the process.
 if original_size == 0:
     print(f'Please check this VCF: {path_to_original_vcf}, the size is 0.')
 
@@ -61,7 +61,8 @@ elif original_size >= 250000000:
         subprocess.run(command_compress, stdin = split.stdout, stdout = f2)
         f2.close()
 
-    #Check that the new sizes are less than 250000000. If not: print error message. At the moment, manual intervention will be needed in such case, to decide how to split the VCFs.
+    #Check that the new sizes are less than 250000000.
+    #At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
     size_vcf1 = os.path.getsize(vcf1)
     size_vcf2 = os.path.getsize(vcf2)
     if size_vcf1 >= 250000000 or size_vcf2 >= 250000000:
@@ -69,6 +70,7 @@ elif original_size >= 250000000:
     else:
         VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
         VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
-
+    
 else:
     VCF = FileInfo(path_to_original_vcf, original_name)
+
