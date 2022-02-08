@@ -16,54 +16,65 @@ class OAuth2Client:
         self.token_url = passwords.alissa.token_url
         self.session = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id))
 
+        # TODO Add token timer
         self._token = None
 
     def fetch_token(self):
-
+        # TODO Add check for time since token made
         if self._token:
             return self._token
 
         response = self.session.fetch_token(token_url=self.token_url,
-            username=self.username,
-            password=self.password,
-            client_id=self.client_id,
-            client_secret=self.client_secret)
-
+                                            username=self.username,
+                                            password=self.password,
+                                            client_id=self.client_id,
+                                            client_secret=self.client_secret)
+        # FIXME This could be done better
         if self.session.authorized:
             self._token = response['token_type'] + " " + response['access_token']
 
         return self._token
 
-    def is_valid_token(self) -> bool:
-        return self.session.authorized
-    
 class cggPatient:
-    def __init__(self, token, patient_id, accession_number, folder_name='Default', sex='Unknown', comments="test", family_id='test'):
-    #Should all of these attributes be stored there or can they go somewhere else, e.g. in functions?
+    def __init__(self, token, patient_id, accession_number,
+                 folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
         self.token = token
         self.patient_id = patient_id
-        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
+        self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
+
         self.folder_name = folder_name
         self.sex = sex
-        self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
         self.comments = comments
         self.family_id = family_id
 
-    def exist(self):
-        response = requests.get(self.resource_url, params={'accessionNumber': self.patient_id} , headers = {'Authorization' : self.token})
-        patient_list = utils.convert_json_to_obj(response.text)
-        return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
+        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
+
+    def get_existing_patient(self):
+        """Return patient entry if it exists."""
+        response = requests.get(self.resource_url,
+                                params={'accessionNumber': self.patient_id},
+                                headers = {'Authorization' : self.token})
+        return utils.convert_json_to_obj(response.text) # List of dict entries FIXME ??
+
+    def exists(self):
+        """Return patient entry exists."""
+        return bool(self.get_existing_patient())
 
     def create(self):
+        """Create the patient."""
         json_data = {
             'accessionNumber': self.accession_number,
-            'comments': self.comments,
-            'familyIdentifier': self.family_id, 
             'folderName': self.folder_name,
-            'gender': self.sex
+            'gender': self.sex,
+            'comments': self.comments,
+            'familyIdentifier': self.family_id
         }
-        response = requests.post(self.resource_url, data = json.dumps(json_data), headers = {'Authorization' : self.token,'Content-Type': 'application/json'})
-        response.raise_for_status() #If it succeeds, this should return "None".
+        response = requests.post(self.resource_url,
+                                 data = json.dumps(json_data),
+                                 headers = {'Authorization' : self.token,
+                                            'Content-Type': 'application/json'})
+        response.raise_for_status()  #NOTE: If it succeeds, this should return "None".
+        return response
 
 #
 #
@@ -85,26 +96,25 @@ class cggPatient:
     
 def main():
     oauth2_client = OAuth2Client()
-    oauth2_client.fetch_token()
-    
-    if oauth2_client.is_valid_token():
-        newtoken = oauth2_client._token
-        print(newtoken)
+    token = oauth2_client.fetch_token()
+
+    if token:
         patient_id = "test-patient_220203" #TODO get this information from SLIMS (most likely: sctx.sample_name)
         folder_name = "Default" #TODO get this information from SLIMS
-        patient_sex = "Female" #sctx.slims_info['gender']
+        patient_sex = "FEMALE" #sctx.slims_info['gender']
         accession_number = "test-patient_220203"
-        patient = cggPatient(newtoken, patient_id, folder_name, accession_number, patient_sex)
+        patient = cggPatient(token, patient_id, accession_number, folder_name, patient_sex)
 
-        patient_by_accession = patient.exist()
+        if patient.exists():
+            print('Patient exists.')
+            return True  # TODO What to return?
+
         #TODO in the future: depending on whether the patient already exists or not, behavior (e.g. creating a patient) might differ.
-        print(patient_by_accession) if patient_by_accession is not None else print("Patient does not exist")
-
-        patient.create() 
+        response = patient.create()
 
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
-
     else:
+        # TODO Add a raise for custom Exception or built-in
         print('No token was generated. Investigate!')
    
 if __name__ == '__main__':
