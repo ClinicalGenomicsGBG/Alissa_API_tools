@@ -21,7 +21,7 @@ original_folder = os.path.dirname(path_to_original_vcf)
 if original_size == 0:
     print(f'Please check this VCF: {path_to_original_vcf}, the size is 0.')
 
-elif original_size >= 250000000:
+elif original_size >= 250_000_000:
     print("The VCF file needs to be splitted into smaller VCFs.")
     vcf1 = original_folder+"/"+basename+"_chr1-8.vcf.gz"
     vcf2 = original_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
@@ -65,7 +65,7 @@ elif original_size >= 250000000:
     #At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
     size_vcf1 = os.path.getsize(vcf1)
     size_vcf2 = os.path.getsize(vcf2)
-    if size_vcf1 >= 250000000 or size_vcf2 >= 250000000:
+    if size_vcf1 >= 250_000_000 or size_vcf2 >= 250_000_000:
         print(f'One of the files is still larger than 250M. Investigate. Files to control: {vcf1} and {vcf2}.')
     else:
         VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
