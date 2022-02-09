@@ -34,10 +34,9 @@ elif original_size >= 250_000_000:
     if os.path.isfile(vcf1):
         print(f'File {vcf1} already exists, moving on.')
     else:
-        f1 = open(vcf1, "w")
-        split = subprocess.Popen(command_split_vcf1, stdout = subprocess.PIPE)
-        subprocess.run(command_compress, stdin = split.stdout, stdout = f1)
-        f1.close()
+        with open(vcf1, "w") as f1:
+            split = subprocess.Popen(command_split_vcf1, stdout = subprocess.PIPE)
+            subprocess.run(command_compress, stdin = split.stdout, stdout = f1)
 
     if os.path.isfile(vcf2):
         print(f'File {vcf2} already exists, moving on.')
@@ -56,10 +55,9 @@ elif original_size >= 250_000_000:
                               "--chr", "GL000219.1", "--chr", "GL000224.1", "--chr", "GL000223.1", "--chr", "GL000195.1", "--chr", "GL000212.1", "--chr", "GL000222.1",
                               "--chr", "GL000200.1", "--chr", "GL000193.1", "--chr", "GL000194.1", "--chr", "GL000225.1", "--chr", "GL000192.1", "--chr", "NC_007605", "--chr", "hs37d5",
                               "--recode", "--recode-INFO-all", "--stdout"]
-        f2 = open(vcf2, "w")
-        split = subprocess.Popen(command_split_vcf2, stdout = subprocess.PIPE)
-        subprocess.run(command_compress, stdin = split.stdout, stdout = f2)
-        f2.close()
+        with open(vcf2, "w") as f2:
+            split = subprocess.Popen(command_split_vcf2, stdout = subprocess.PIPE)
+            subprocess.run(command_compress, stdin = split.stdout, stdout = f2)
 
     #Check that the new sizes are less than 250000000.
     #At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
