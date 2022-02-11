@@ -1,4 +1,6 @@
-#The main (and perhaps only) argument for this script should be the path to the original VCF file.
+#Usage: python chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder
+#Example: python chunk_vcf.py /home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz /home/xbregw/Alissa_upload/VCFs/chunks
+#TODO Use e.g. /tmp on working node as the output folder
 
 import sys
 import os
@@ -11,6 +13,7 @@ class FileInfo:
 
 args = sys.argv
 path_to_original_vcf = str(args[1]).strip()
+output_folder = str(args[2]).strip()
 
 original_name = os.path.basename(path_to_original_vcf)
 original_size = os.path.getsize(path_to_original_vcf)
@@ -29,8 +32,8 @@ elif original_size >= 250_000_000:
     command_index = ["bcftools", "index", path_to_original_vcf]
     subprocess.run(command_index)
     
-    vcf1 = original_folder+"/"+basename+"_chr1-8.vcf.gz"
-    vcf2 = original_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
+    vcf1 = output_folder+"/"+basename+"_chr1-8.vcf.gz"
+    vcf2 = output_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
 
     #Split the VCF.
     command_split_vcf1 = ["bcftools", "view", "--output-type", "z", "--output", vcf1, "-r", "1,2,3,4,5,6,7,8", path_to_original_vcf]
