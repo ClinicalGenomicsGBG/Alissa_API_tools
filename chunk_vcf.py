@@ -1,6 +1,7 @@
 #Usage: python chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder
 #Example: python chunk_vcf.py /home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz /home/xbregw/Alissa_upload/VCFs/chunks
 #TODO Use e.g. /tmp on working node as the output folder
+#TODO package all/most of the logic into a class and make it non-Alissa specific to allow for reuse.
 
 import sys
 import os
@@ -20,9 +21,9 @@ original_size = os.path.getsize(path_to_original_vcf)
 basename = original_name.replace('.vcf.gz','')
 original_folder = os.path.dirname(path_to_original_vcf)
 
-#TODO possibly later: instead of printing error messages, exit the process.
+#TODO possibly later: instead of raising an exception, exit the process.
 if original_size == 0:
-    print(f'Please check this VCF: {path_to_original_vcf}, the size is 0.')
+    raise Exception(f'Please check this VCF: {path_to_original_vcf}, the size is 0.')
 
 elif original_size >= 250_000_000:
     print("The VCF file needs to be splitted into smaller VCFs.")
