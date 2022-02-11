@@ -18,23 +18,30 @@ output_folder = str(args[2]).strip()
 
 original_name = os.path.basename(path_to_original_vcf)
 original_size = os.path.getsize(path_to_original_vcf)
-basename = original_name.replace('.vcf.gz','')
 original_folder = os.path.dirname(path_to_original_vcf)
 
 #TODO possibly later: instead of raising an exception, exit the process.
 if original_size == 0:
-    raise Exception(f'Please check this VCF: {path_to_original_vcf}, the size is 0.')
+    raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
 
 elif original_size >= 250_000_000:
-    print("The VCF file needs to be splitted into smaller VCFs.")
+    print("The file needs to be splitted into smaller VCFs.")
+
+    #Depending on whether the file is gzipped or not, it needs to be indexed or not.
+    if 'vcf.gz' in original_name:
+        basename = original_name.replace('.vcf.gz','')    
+        command_index = ["bcftools", "index", path_to_original_vcf]
+        if os.path.isfile(path_to_original_vcf+".csi"):
+            print('Index exists already, skipping indexing step.')
+        else:
+            subprocess.run(command_index)
+
+    elif 'vcf' in original_name:
+        basename = original_name.replace('.vcf','')
     
-    #Preliminary step: index the VCF.
-    command_index = ["bcftools", "index", path_to_original_vcf]
-    if os.path.isfile(path_to_original_vcf+".csi"):
-         print('Index exists already, skipping indexing step.')
     else:
-        subprocess.run(command_index)
-    
+        raise Exception('The input file should either be a VCF or a VCF.GZ.')
+
     vcf1 = output_folder+"/"+basename+"_chr1-8.vcf.gz"
     vcf2 = output_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
 
