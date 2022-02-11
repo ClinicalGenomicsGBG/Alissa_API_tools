@@ -29,9 +29,11 @@ elif original_size >= 250_000_000:
     print("The VCF file needs to be splitted into smaller VCFs.")
     
     #Preliminary step: index the VCF.
-    #TODO possibly: add a clause to check whether the index already exists.
     command_index = ["bcftools", "index", path_to_original_vcf]
-    subprocess.run(command_index)
+    if os.path.isfile(path_to_original_vcf+".csi"):
+         print('Index exists already, skipping indexing step.')
+    else:
+        subprocess.run(command_index)
     
     vcf1 = output_folder+"/"+basename+"_chr1-8.vcf.gz"
     vcf2 = output_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
@@ -55,7 +57,7 @@ elif original_size >= 250_000_000:
     size_vcf1 = os.path.getsize(vcf1)
     size_vcf2 = os.path.getsize(vcf2)
     if size_vcf1 >= 250_000_000 or size_vcf2 >= 250_000_000:
-        print(f'One of the files is still larger than 250M. Investigate. Files to control: {vcf1} and {vcf2}.')
+        raise Exception(f'One of the files is still larger than 250M. Investigate. Files to control: {vcf1} and {vcf2}.')
     else:
         VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
         VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
