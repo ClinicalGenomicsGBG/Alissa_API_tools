@@ -8,6 +8,7 @@ from oauthlib.oauth2 import LegacyApplicationClient
 
 # Token generation
 class OAuth2Client:
+    """Read credentials and return a token."""
     def __init__(self):
         self.username = passwords.alissa.username
         self.password = passwords.alissa.password
@@ -20,6 +21,7 @@ class OAuth2Client:
         self._token = None
 
     def fetch_token(self):
+        """Fetch a token that is used for commands to Alissa such as creating a patient."""
         # TODO Add check for time since token made
         if self._token:
             return self._token
@@ -36,6 +38,10 @@ class OAuth2Client:
         return self._token
 
 class cggPatient:
+    """Create an object with information about a patient.
+
+    In WOPR, the accession_number and the patient_id are the same; the comments and family_id fields are not used. folder_name is usually KG, KK or PAT.
+    """
     def __init__(self, token, patient_id, accession_number,
                  folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
         self.token = token
