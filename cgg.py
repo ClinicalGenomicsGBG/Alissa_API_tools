@@ -46,7 +46,7 @@ class cggPatient:
                  folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
         self.token = token
         self.patient_id = patient_id
-        self.accession_number = accession_number #Perhaps we do not need that one because in our case, the DNAxxx (or the like) names should be used everywhere.
+        self.accession_number = accession_number
 
         self.folder_name = folder_name
         self.sex = sex
@@ -79,7 +79,7 @@ class cggPatient:
                                  data = json.dumps(json_data),
                                  headers = {'Authorization' : self.token,
                                             'Content-Type': 'application/json'})
-        response.raise_for_status()  #NOTE: If it succeeds, this should return "None".
+        response.raise_for_status()
         return response
 
 #
@@ -118,9 +118,10 @@ def main():
             response = patient.create()
 
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
+
     else:
         # TODO Add a raise for custom Exception or built-in
-        print('No token was generated. Investigate!')
+        raise Exception('No token was generated. Investigate!')
    
 if __name__ == '__main__':
     main()
