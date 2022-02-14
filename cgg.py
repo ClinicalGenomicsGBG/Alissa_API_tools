@@ -99,18 +99,17 @@ def main():
     token = oauth2_client.fetch_token()
 
     if token:
-        patient_id = "test-patient_220203" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        patient_id = "test-patient_220214_2" #TODO get this information from SLIMS (most likely: sctx.sample_name)
         folder_name = "Default" #TODO get this information from SLIMS
         patient_sex = "FEMALE" #sctx.slims_info['gender']
-        accession_number = "test-patient_220203"
+        accession_number = "test-patient_220214_2"
         patient = cggPatient(token, patient_id, accession_number, folder_name, patient_sex)
 
         if patient.exists():
             print('Patient exists.')
-            return True  # TODO What to return?
-
-        #TODO in the future: depending on whether the patient already exists or not, behavior (e.g. creating a patient) might differ.
-        response = patient.create()
+            return True # TODO what to return?
+        else:
+            response = patient.create()
 
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
     else:
