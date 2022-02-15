@@ -8,6 +8,7 @@ import os
 import subprocess
 
 class FileInfo:
+    """Create object with basic information to be used in VCF upload to Alissa via the API."""
     def __init__(self,originalPath,originalName):
         self.originalPath = originalPath
         self.originalName = originalName
@@ -24,12 +25,12 @@ original_folder = os.path.dirname(path_to_original_vcf)
 if original_size == 0:
     raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
 
-elif original_size >= 250_000_000:
-    print("The file needs to be splitted into smaller VCFs.")
+elif original_size >= 240_000_000:
+    print("The file is larger than 240 MiB and needs to be splitted into smaller VCFs.")
 
-    #Depending on whether the file is gzipped or not, it needs to be indexed or not.
+    #Identify  whether the file is gzipped. If no, it first needs to be compressed.
     if original_name.endswith('vcf.gz'):
-        basename = original_name.replace('.vcf.gz','')    
+        basename = original_name.replace('.vcf.gz','')
         vcf_to_index = path_to_original_vcf
 
     elif original_name.endswith('vcf'):
@@ -39,8 +40,9 @@ elif original_size >= 250_000_000:
         subprocess.run(command_bgzip)
     
     else:
-        raise Exception('The input file should either be a VCF or a VCF.GZ.')
+        raise Exception('The input file should be a VCF (gzipped or not).')
 
+    #Index the VCF.
     command_index = ["bcftools", "index", vcf_to_index]
     if os.path.isfile(os.path.join(vcf_to_index+".csi")):
         print('Index exists already, skipping indexing step.')
@@ -64,12 +66,12 @@ elif original_size >= 250_000_000:
     else:
         subprocess.run(command_split_vcf2)
 
-    #Check that the new sizes are less than 250000000.
-    #At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
+    #Check the size after splitting.
+    # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
     size_vcf1 = os.path.getsize(vcf1)
     size_vcf2 = os.path.getsize(vcf2)
-    if size_vcf1 >= 250_000_000 or size_vcf2 >= 250_000_000:
-        raise Exception(f'One of the files is still larger than 250M. Investigate. Files to control: {vcf1} and {vcf2}.')
+    if size_vcf1 >= 240_000_000 or size_vcf2 >= 240_000_000:
+        raise Exception(f'One of the files is still larger than 240 MiB. Investigate. Files to control: {vcf1} and {vcf2}.')
     else:
         VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
         VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
