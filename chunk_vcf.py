@@ -28,13 +28,13 @@ elif original_size >= 250_000_000:
     print("The file needs to be splitted into smaller VCFs.")
 
     #Depending on whether the file is gzipped or not, it needs to be indexed or not.
-    if 'vcf.gz' in original_name:
+    if original_name.endswith('vcf.gz'):
         basename = original_name.replace('.vcf.gz','')    
         vcf_to_index = path_to_original_vcf
 
-    elif 'vcf' in original_name:
+    elif original_name.endswith('vcf'):
         basename = original_name.replace('.vcf','')
-        vcf_to_index = output_folder+"/"+basename+".vcf.gz"
+        vcf_to_index = os.path.join(output_folder, basename + ".vcf.gz")
         command_bgzip = ["bcftools", "view", "--output-type", "z", "--output", vcf_to_index, path_to_original_vcf]
         subprocess.run(command_bgzip)
     
@@ -42,13 +42,13 @@ elif original_size >= 250_000_000:
         raise Exception('The input file should either be a VCF or a VCF.GZ.')
 
     command_index = ["bcftools", "index", vcf_to_index]
-    if os.path.isfile(vcf_to_index+".csi"):
+    if os.path.isfile(os.path.join(vcf_to_index+".csi")):
         print('Index exists already, skipping indexing step.')
     else:
         subprocess.run(command_index)
 
-    vcf1 = output_folder+"/"+basename+"_chr1-8.vcf.gz"
-    vcf2 = output_folder+"/"+basename+"_chr9-hs37d5.vcf.gz"
+    vcf1 = os.path.join(output_folder,basename+"_chr1-8.vcf.gz")
+    vcf2 = os.path.join(output_folder,basename+"_chr9-hs37d5.vcf.gz")
 
     #Split the VCF.
     command_split_vcf1 = ["bcftools", "view", "--output-type", "z", "--output", vcf1, "-r", "1,2,3,4,5,6,7,8", vcf_to_index]
