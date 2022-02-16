@@ -1,5 +1,5 @@
-#Usage: python chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder
-#Example: python chunk_vcf.py /home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz /home/xbregw/Alissa_upload/VCFs/chunks
+#Usage: python3 chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder
+#Example: python3 chunk_vcf.py /home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz /home/xbregw/Alissa_upload/VCFs/chunks
 #TODO Use e.g. /tmp on working node as the output folder
 #TODO package all/most of the logic into a class and make it non-Alissa specific to allow for reuse.
 
