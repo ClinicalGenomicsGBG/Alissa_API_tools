@@ -3,10 +3,15 @@
 import passwords
 import requests
 import json
-import utils
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
+
+# Helper functions
+def convert_json_to_obj(input_json_text):
+    input_json = json.loads(input_json_text)
+    return input_json
+
 
 # Token generation
 class OAuth2Client:
@@ -62,7 +67,7 @@ class cggPatient:
         response = requests.get(self.resource_url,
                                 params={'accessionNumber': self.patient_id},
                                 headers = {'Authorization' : self.token})
-        return utils.convert_json_to_obj(response.text) # List of dict entries FIXME ??
+        return convert_json_to_obj(response.text) # List of dict entries FIXME ??
 
     def exists(self):
         """Return patient entry exists."""
