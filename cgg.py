@@ -6,8 +6,15 @@ import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
-from chunk_vcf import FileInfo #TODO decide whether to define the class within cgg.py or keep it in chunk_vcf.py; package more of the chunk_vcf.py code into classes/functions.
+#from chunk_vcf import FileInfo #TODO decide whether to define the class within cgg.py or keep it in chunk_vcf.py; package more of the chunk_vcf.py code into classes/functions.
 #TODO investigate - I get an error message that is from something outside of the FileInfo class definition in chunk_vcf.py Why??
+
+class FileInfo:
+    """Create object with basic information to be used in VCF upload to Alissa via the API."""
+    def __init__(self,originalPath,originalName):
+        self.originalPath = originalPath
+        self.originalName = originalName
+
 
 # Token generation
 class OAuth2Client:
