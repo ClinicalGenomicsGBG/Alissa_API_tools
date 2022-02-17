@@ -6,6 +6,8 @@ import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
+from chunk_vcf import FileInfo #TODO decide whether to define the class within cgg.py or keep it in chunk_vcf.py; package more of the chunk_vcf.py code into classes/functions.
+#TODO investigate - I get an error message that is from something outside of the FileInfo class definition in chunk_vcf.py Why??
 
 # Token generation
 class OAuth2Client:
@@ -99,25 +101,42 @@ class cggPatient:
 #cf bcm.py from row 66 - Upload VCF file. Function add_data_file from api_client.py.
 #cf bcm.py from row 109 - Attach VCF file to a patient. Function create_lab_result from api_client.py. 
 
-
+def post_vcf_to_alissa(self, file_info : FileInfo, token):
+    """Create post request for uploading a VCF from local machine to Alissa."""
+    files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
+    resource_url_postvcf = passwords.alissa.bench_url + "/api/2/" + "data_files"
+    response = requests.post(resource_url_postvcf,
+                             params={'type': 'VCF_FILE'},
+                             headers = {'Authorization' : token},
+                             files=files_list)
+    response_body = json.loads(response.text)
+    if response_body is not None:
+        return response_body['id']
+    return
     
 def main():
     oauth2_client = OAuth2Client()
     token = oauth2_client.fetch_token()
 
     if token:
-        patient_id = "test-patient_220214_2" #TODO get this information from SLIMS (most likely: sctx.sample_name)
-        folder_name = "Default" #TODO get this information from SLIMS
-        patient_sex = "FEMALE" #sctx.slims_info['gender']
-        accession_number = "test-patient_220214_2"
-        patient = cggPatient(token, patient_id, accession_number, folder_name, patient_sex)
-
-        if patient.exists():
-            print('Patient exists.')
-            return True # TODO what to return?
-        else:
-            response = patient.create()
-
+        ##Test: create patient, check whether it exists.
+        #patient_id = "test-patient_220214_2" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        #folder_name = "Default" #TODO get this information from SLIMS
+        #patient_sex = "FEMALE" #sctx.slims_info['gender']
+        #accession_number = "test-patient_220214_2"
+        #patient = cggPatient(token, patient_id, accession_number, folder_name, patient_sex)
+        #
+        #if patient.exists():
+        #    print('Patient exists.')
+        #    return True # TODO what to return?
+        #else:
+        #    response = patient.create()
+        
+        #Test: post a VCF file
+        path = '/home/xbregw/Alissa_upload/VCFs/chunks/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
+        name = 'NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
+        vcf_file_info = FileInfo(path,name) #Or how should the values be filled in?
+#        post_vcf_to_alissa(vcf_file_info, token)
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
@@ -125,4 +144,5 @@ def main():
         raise Exception('No token was generated. Investigate!')
    
 if __name__ == '__main__':
+
     main()
