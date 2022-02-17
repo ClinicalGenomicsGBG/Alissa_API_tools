@@ -14,3 +14,13 @@ To activate this new environment:
 module load anaconda2
 source activate wopr_alissa
 ```
+
+## Test the code
+
+At the moment, the code can be tested as such:
+
+```
+python3 cgg.py #Create a new patient
+python3 chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder #Create chunks of VCF file
+```
+The arguments (e.g. patient ID or input VCF) have to be modified directly in ```cgg.py``` or ```chunk_vcf.py```.
