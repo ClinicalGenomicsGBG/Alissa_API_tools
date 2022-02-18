@@ -107,6 +107,7 @@ class cggPatient:
 #cf bcm.py from row 66 - Upload VCF file. Function add_data_file from api_client.py.
 #cf bcm.py from row 109 - Attach VCF file to a patient. Function create_lab_result from api_client.py. 
 
+#TODO add a function (or a step in post_vcf_to_alissa) to check whether a file with the same name already exists. Otherwise it will be replaced.
 def post_vcf_to_alissa(file_info : FileInfo, token):
     """Create post request for uploading a VCF from local machine to Alissa."""
     files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
@@ -139,12 +140,11 @@ def main():
         #    response = patient.create()
         
         #Test: post a VCF file
-        path = '/home/xbregw/Alissa_upload/VCFs/chunks/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
+        path = '/home/xbregw/Alissa_upload/VCFs/chunks/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
         name = 'NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
         vcf_file_info = FileInfo(path,name) #Or how should the values be filled in?
         data_file_id = post_vcf_to_alissa(vcf_file_info, token)
         print(data_file_id)
-#        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
         # TODO Add a raise for custom Exception or built-in
