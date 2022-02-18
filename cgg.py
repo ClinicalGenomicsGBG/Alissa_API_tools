@@ -6,8 +6,7 @@ import json
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
-#from chunk_vcf import FileInfo #TODO decide whether to define the class within cgg.py or keep it in chunk_vcf.py; package more of the chunk_vcf.py code into classes/functions.
-#TODO investigate - I get an error message that is from something outside of the FileInfo class definition in chunk_vcf.py Why??
+#from chunk_vcf import FileInfo #TODO decide whether to define the class within cgg.py or keep it in chunk_vcf.py; package more of the chunk_vcf.py code into classes/functions. If I want to import only the class FileInfo from chunk_vcf.py, I need to package the rest of the logic in functions/main()/etc.
 
 class FileInfo:
     """Create object with basic information to be used in VCF upload to Alissa via the API."""
@@ -108,7 +107,7 @@ class cggPatient:
 #cf bcm.py from row 66 - Upload VCF file. Function add_data_file from api_client.py.
 #cf bcm.py from row 109 - Attach VCF file to a patient. Function create_lab_result from api_client.py. 
 
-def post_vcf_to_alissa(self, file_info : FileInfo, token):
+def post_vcf_to_alissa(file_info : FileInfo, token):
     """Create post request for uploading a VCF from local machine to Alissa."""
     files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
     resource_url_postvcf = passwords.alissa.bench_url + "/api/2/" + "data_files"
@@ -143,7 +142,8 @@ def main():
         path = '/home/xbregw/Alissa_upload/VCFs/chunks/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
         name = 'NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
         vcf_file_info = FileInfo(path,name) #Or how should the values be filled in?
-#        post_vcf_to_alissa(vcf_file_info, token)
+        data_file_id = post_vcf_to_alissa(vcf_file_info, token)
+        print(data_file_id)
 #        #Location and name of VCF: Sctx.snv_cnv_vcf_path
 
     else:
