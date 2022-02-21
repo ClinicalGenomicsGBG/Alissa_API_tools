@@ -103,7 +103,14 @@ class cggPatient:
 #cf bcm.py from row 84; functions: get_patient_by_name, create_patient (caution! The create_patient from api_client.py, not from bcm.py) (why are there two functions with the same name? Not practical).
 #
 
-#TODO add a function (or a step in post_vcf_to_alissa) to check whether a file with the same name already exists. Otherwise it will be replaced.
+def get_data_file_by_Name(name, token) -> list:
+    """Return a list with information about data file if it already exists in the system."""
+    resource_url_postvcf = passwords.alissa.bench_url + "/api/2/" + "data_files"
+    response = requests.get(resource_url_postvcf,
+                            params={'name': name},
+                            headers = {'Authorization' : token})
+    return json.loads(response.text)  
+
 def post_vcf_to_alissa(file_info : FileInfo, token):
     """Create post request for uploading a VCF from local machine to Alissa."""
     files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
@@ -113,8 +120,9 @@ def post_vcf_to_alissa(file_info : FileInfo, token):
                              headers = {'Authorization' : token},
                              files = files_list)
     response_body = json.loads(response.text)
+#    print(response_body)
     if response_body is not None:
-        return response_body['id']
+        return response_body['id'] #Comment: this raises an error if the response body is not None but the upload was not a success (e.g.: [{'key': 'file', 'errorCode': 'ERROR_DATA_FILE_IN_USE', 'errorArguments': [], 'errorMessage': "This file is in use and can't be deleted or overwritten."}] )
     return
 
 def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
@@ -131,7 +139,7 @@ def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
                             data = json.dumps(json_data),
                             headers = {'Authorization' : token, 'Content-Type': 'application/json'})
     response_body = json.loads(response.text)
-    print(response_body)
+#    print(response_body)
     if response_body is not None:
         return response_body['id']
     return
@@ -157,15 +165,18 @@ def main():
         print(patient_id)
         
         #Test: post a VCF file
-        path = '/home/xbregw/Alissa_upload/VCFs/known_variants.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
+        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220221.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
         name = os.path.basename(path)
-        vcf_file_info = FileInfo(path,name)
-        data_file_id = post_vcf_to_alissa(vcf_file_info, token)
-        print(data_file_id)
-
-        #Test: link a VCF to a patient
-        test = link_vcf_to_patient(patient_id, data_file_id, "NA12878", token)
-        print(test)
+        ##Preliminary: check whether it exists
+        data_file = get_data_file_by_Name(name, token)
+        print(data_file)
+#        vcf_file_info = FileInfo(path,name)
+#        data_file_id = post_vcf_to_alissa(vcf_file_info, token)
+#        print(data_file_id)
+#
+#        #Test: link a VCF to a patient
+#        test = link_vcf_to_patient(patient_id, data_file_id, "NA12878", token)
+#        print(test)
 
     else:
         # TODO Add a raise for custom Exception or built-in
