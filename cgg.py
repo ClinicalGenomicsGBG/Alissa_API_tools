@@ -14,8 +14,6 @@ class FileInfo:
         self.originalPath = originalPath
         self.originalName = originalName
 
-
-# Token generation
 class OAuth2Client:
     """Read credentials and return a token."""
     def __init__(self):
@@ -49,25 +47,23 @@ class OAuth2Client:
 class cggPatient:
     """Create an object with information about a patient.
 
-    In WOPR, the accession_number and the patient_id are the same; the comments and family_id fields are not used. folder_name is usually KG, KK or PAT.
+    In WOPR, the accession_number and the patient_name are the same; the comments and family_id fields are not used. folder_name is usually KG, KK or PAT.
     """
-    def __init__(self, token, patient_id, accession_number,
+    def __init__(self, token, patient_name, accession_number,
                  folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
         self.token = token
-        self.patient_id = patient_id
+        self.patient_name = patient_name
         self.accession_number = accession_number
-
         self.folder_name = folder_name
         self.sex = sex
         self.comments = comments
         self.family_id = family_id
-
         self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
 
     def get_existing_patient(self):
         """Return patient entry if it exists."""
         response = requests.get(self.resource_url,
-                                params={'accessionNumber': self.patient_id},
+                                params={'accessionNumber' : self.patient_name},
                                 headers = {'Authorization' : self.token})
         patient_list = json.loads(response.text) # List of dict entries FIXME ??
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
@@ -89,7 +85,6 @@ class cggPatient:
                                  data = json.dumps(json_data),
                                  headers = {'Authorization' : self.token,
                                             'Content-Type': 'application/json'})
-#        response.raise_for_status() #TODO is that needed?
         response_body = json.loads(response.text)
         if response_body is not None:
             return response_body['id']
@@ -107,9 +102,6 @@ class cggPatient:
 # Patient post
 #cf bcm.py from row 84; functions: get_patient_by_name, create_patient (caution! The create_patient from api_client.py, not from bcm.py) (why are there two functions with the same name? Not practical).
 #
-# VCF post
-#cf bcm.py from row 66 - Upload VCF file. Function add_data_file from api_client.py.
-#cf bcm.py from row 109 - Attach VCF file to a patient. Function create_lab_result from api_client.py. 
 
 #TODO add a function (or a step in post_vcf_to_alissa) to check whether a file with the same name already exists. Otherwise it will be replaced.
 def post_vcf_to_alissa(file_info : FileInfo, token):
@@ -117,22 +109,24 @@ def post_vcf_to_alissa(file_info : FileInfo, token):
     files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
     resource_url_postvcf = passwords.alissa.bench_url + "/api/2/" + "data_files"
     response = requests.post(resource_url_postvcf,
-                             params={'type': 'VCF_FILE'},
+                             params = {'type': 'VCF_FILE'},
                              headers = {'Authorization' : token},
-                             files=files_list)
+                             files = files_list)
     response_body = json.loads(response.text)
     if response_body is not None:
         return response_body['id']
     return
 
-def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token): #In the Agilent scripts data_file_id and sample_identifier are packaged in class LabResult. The sample identifier is the sample name IN the VCF file.
-    """Create a lab result i.e. link a patient to a VCF file, using Alissa's internal identifiers."""
+def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
+    """Create a lab result i.e. link a patient to a VCF file, using Alissa's internal identifiers.
+
+    The sample identifier is the sample ID in the VCF file header line.
+    """
     lab_result_url = passwords.alissa.bench_url + "/api/2/" + "patients/" + str(patient_id) + "/lab_results"
     json_data = {
         'dataFileId' : data_file_id,
         'sampleIdentifier' : sample_identifier
     }
-    print(lab_result_url)
     response = requests.post(lab_result_url,
                             data = json.dumps(json_data),
                             headers = {'Authorization' : token, 'Content-Type': 'application/json'})
@@ -149,15 +143,15 @@ def main():
 
     if token:
         #Test: create patient, check whether it exists.
-        patient_id = "test-patient_220221_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
-        folder_name = "Default" #TODO get this information from SLIMS
-        patient_sex = "FEMALE" #sctx.slims_info['gender']
-        accession_number = "test-patient_220221_1"
-        patient = cggPatient(token, patient_id, accession_number, folder_name, patient_sex)
+        patient_name = "test-patient_220221_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        folder_name = "Default" #TODO get this information from SLIMS, default: "Default"
+        patient_sex = "FEMALE" #sctx.slims_info['gender'], default: "UNKNOWN"
+        accession_number = "test-patient_220221_1" #In WOPR, same as patient_id
+        patient = cggPatient(token, patient_name, accession_number, folder_name, patient_sex)
         
         if patient.exists():     #An alternative to this function is to check whether the response of get_existing_patient is "None" (cf Agilent bcm.py row 88).
             print('Patient exists.')
-            existing_patient = patient.get_existing_patient() # TODO This should return the unique Alissa patient ID, since this is necessary for linking patient and VCF file.
+            existing_patient = patient.get_existing_patient()
             patient_id = existing_patient['id']
         else:
             patient_id = patient.create()
@@ -165,8 +159,8 @@ def main():
         
         #Test: post a VCF file
         path = '/home/xbregw/Alissa_upload/VCFs/chunks/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
-        name = 'NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz'
-        vcf_file_info = FileInfo(path,name) #Or how should the values be filled in?
+        name = os.path.basename(path)
+        vcf_file_info = FileInfo(path,name)
         data_file_id = post_vcf_to_alissa(vcf_file_info, token)
         print(data_file_id)
 
