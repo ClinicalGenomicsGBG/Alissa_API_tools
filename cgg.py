@@ -48,7 +48,7 @@ class OAuth2Client:
 class cggPatient:
     """Create an object with information about a patient.
 
-    In WOPR, the comments and family_id fields are not used. folder_name is usually KG, KK or PAT.
+    In WOPR, the comments and family_id fields are not used. folder_name is usually Klinisk Genetik (KG) or Klinisk kemi (KK).
     """
     def __init__(self, token, accession_number,
                  folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
@@ -122,7 +122,7 @@ def post_vcf_to_alissa(file_info : FileInfo, token):
     response_body = json.loads(response.text)
 #    print(response_body)
     if response_body is not None:
-        return response_body['id'] #Comment: this raises an error if the response body is not None but the upload was not a success (e.g.: [{'key': 'file', 'errorCode': 'ERROR_DATA_FILE_IN_USE', 'errorArguments': [], 'errorMessage': "This file is in use and can't be deleted or overwritten."}] )
+        return response_body['id']
     return
 
 def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
@@ -150,12 +150,16 @@ def main():
     token = oauth2_client.fetch_token()
 
     if token:
-        #Test: create patient, check whether it exists.
-        folder_name = "Default" #TODO get this information from SLIMS, default: "Default"
-        patient_sex = "FEMALE" #sctx.slims_info['gender'], default: "UNKNOWN"
-        accession_number = "test-patient_220221_2" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+	
+	#Parameters required for 1-creating patient, 2-uploading VCF file and 3-linking patient and VCF file.
+        accession_number = "test-patient_220221_3" #SLIMS: Sctx.sample_name
+        folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
+        patient_sex = "FEMALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
+        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220221_2.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
+        name_in_vcf = "NA12878" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
+
+        #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
         patient = cggPatient(token, accession_number, folder_name, patient_sex)
-        
         if patient.exists():     #An alternative to this function is to check whether the response of get_existing_patient is "None" (cf Agilent bcm.py row 88).
             print('Patient exists.')
             existing_patient = patient.get_existing_patient()
@@ -164,19 +168,20 @@ def main():
             patient_id = patient.create()
         print(patient_id)
         
-        #Test: post a VCF file
-        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220221.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
+        #Check whether a data file exists, if not: upload it. In both cases: return internal data file id.
         name = os.path.basename(path)
-        ##Preliminary: check whether it exists
         data_file = get_data_file_by_Name(name, token)
-        print(data_file)
-#        vcf_file_info = FileInfo(path,name)
-#        data_file_id = post_vcf_to_alissa(vcf_file_info, token)
-#        print(data_file_id)
-#
-#        #Test: link a VCF to a patient
-#        test = link_vcf_to_patient(patient_id, data_file_id, "NA12878", token)
-#        print(test)
+        if len(data_file) > 0:
+            print('A VCF file with the same name already exists. Not attempting to upload it again.')
+            data_file_id = data_file[0]['id']
+        else: 
+            vcf_file_info = FileInfo(path,name)
+            data_file_id = post_vcf_to_alissa(vcf_file_info, token)
+        print(data_file_id)
+
+        #Link data file to patient (i.e. create a lab result). If the lab result already exists: this will result in an error.
+        labresult = link_vcf_to_patient(patient_id, data_file_id, name_in_vcf, token)
+        print(labresult)
 
     else:
         # TODO Add a raise for custom Exception or built-in
