@@ -3,6 +3,7 @@
 import passwords
 import requests
 import json
+import os
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
@@ -47,12 +48,11 @@ class OAuth2Client:
 class cggPatient:
     """Create an object with information about a patient.
 
-    In WOPR, the accession_number and the patient_name are the same; the comments and family_id fields are not used. folder_name is usually KG, KK or PAT.
+    In WOPR, the comments and family_id fields are not used. folder_name is usually KG, KK or PAT.
     """
-    def __init__(self, token, patient_name, accession_number,
+    def __init__(self, token, accession_number,
                  folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
         self.token = token
-        self.patient_name = patient_name
         self.accession_number = accession_number
         self.folder_name = folder_name
         self.sex = sex
@@ -63,7 +63,7 @@ class cggPatient:
     def get_existing_patient(self):
         """Return patient entry if it exists."""
         response = requests.get(self.resource_url,
-                                params={'accessionNumber' : self.patient_name},
+                                params={'accessionNumber' : self.accession_number},
                                 headers = {'Authorization' : self.token})
         patient_list = json.loads(response.text) # List of dict entries FIXME ??
         return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
@@ -143,11 +143,10 @@ def main():
 
     if token:
         #Test: create patient, check whether it exists.
-        patient_name = "test-patient_220221_1" #TODO get this information from SLIMS (most likely: sctx.sample_name)
         folder_name = "Default" #TODO get this information from SLIMS, default: "Default"
         patient_sex = "FEMALE" #sctx.slims_info['gender'], default: "UNKNOWN"
-        accession_number = "test-patient_220221_1" #In WOPR, same as patient_id
-        patient = cggPatient(token, patient_name, accession_number, folder_name, patient_sex)
+        accession_number = "test-patient_220221_2" #TODO get this information from SLIMS (most likely: sctx.sample_name)
+        patient = cggPatient(token, accession_number, folder_name, patient_sex)
         
         if patient.exists():     #An alternative to this function is to check whether the response of get_existing_patient is "None" (cf Agilent bcm.py row 88).
             print('Patient exists.')
@@ -158,14 +157,14 @@ def main():
         print(patient_id)
         
         #Test: post a VCF file
-        path = '/home/xbregw/Alissa_upload/VCFs/chunks/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline_chr1-8.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
+        path = '/home/xbregw/Alissa_upload/VCFs/known_variants.vcf.gz' #Location and name of VCF in slims: Sctx.snv_cnv_vcf_path
         name = os.path.basename(path)
         vcf_file_info = FileInfo(path,name)
         data_file_id = post_vcf_to_alissa(vcf_file_info, token)
         print(data_file_id)
 
         #Test: link a VCF to a patient
-        test = link_vcf_to_patient(patient_id, data_file_id, "NA24143", token)
+        test = link_vcf_to_patient(patient_id, data_file_id, "NA12878", token)
         print(test)
 
     else:
