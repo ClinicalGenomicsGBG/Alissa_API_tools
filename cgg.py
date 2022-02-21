@@ -124,7 +124,25 @@ def post_vcf_to_alissa(file_info : FileInfo, token):
     if response_body is not None:
         return response_body['id']
     return
-    
+
+def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token): #In the Agilent scripts data_file_id and sample_identifier are packaged in class LabResult. The sample identifier is the sample name IN the VCF file.
+    """Create a lab result i.e. link a patient to a VCF file, using Alissa's internal identifiers."""
+    lab_result_url = passwords.alissa.bench_url + "/api/2/" + "patients/" + str(patient_id) + "/lab_results"
+    json_data = {
+        'dataFileId' : data_file_id,
+        'sampleIdentifier' : sample_identifier
+    }
+    print(lab_result_url)
+    response = requests.post(lab_result_url,
+                            data = json.dumps(json_data),
+                            headers = {'Authorization' : token, 'Content-Type': 'application/json'})
+    response_body = json.loads(response.text)
+    print(response_body)
+    if response_body is not None:
+        return response_body['id']
+    return
+
+ 
 def main():
     oauth2_client = OAuth2Client()
     token = oauth2_client.fetch_token()
@@ -151,6 +169,10 @@ def main():
         vcf_file_info = FileInfo(path,name) #Or how should the values be filled in?
         data_file_id = post_vcf_to_alissa(vcf_file_info, token)
         print(data_file_id)
+
+        #Test: link a VCF to a patient
+        test = link_vcf_to_patient(patient_id, data_file_id, "NA24143", token)
+        print(test)
 
     else:
         # TODO Add a raise for custom Exception or built-in
