@@ -58,7 +58,7 @@ class cggPatient:
         self.sex = sex
         self.comments = comments
         self.family_id = family_id
-        self.resource_url = passwords.alissa.bench_url + "/api/2/" + "patients"
+        self.resource_url = passwords.alissa.bench_url + "/api/2/patients"
 
     def get_existing_patient(self):
         """Return patient entry if it exists."""
@@ -105,16 +105,16 @@ class cggPatient:
 
 def get_data_file_by_Name(name, token) -> list:
     """Return a list with information about data file if it already exists in the system."""
-    resource_url_postvcf = passwords.alissa.bench_url + "/api/2/" + "data_files"
+    resource_url_postvcf = passwords.alissa.bench_url + "/api/2/data_files"
     response = requests.get(resource_url_postvcf,
-                            params={'name': name},
+                            params = {'name': name},
                             headers = {'Authorization' : token})
     return json.loads(response.text)  
 
 def post_vcf_to_alissa(file_info : FileInfo, token):
     """Create post request for uploading a VCF from local machine to Alissa."""
     files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
-    resource_url_postvcf = passwords.alissa.bench_url + "/api/2/" + "data_files"
+    resource_url_postvcf = passwords.alissa.bench_url + "/api/2/data_files"
     response = requests.post(resource_url_postvcf,
                              params = {'type': 'VCF_FILE'},
                              headers = {'Authorization' : token},
@@ -130,7 +130,7 @@ def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
 
     The sample identifier is the sample ID in the VCF file header line.
     """
-    lab_result_url = passwords.alissa.bench_url + "/api/2/" + "patients/" + str(patient_id) + "/lab_results"
+    lab_result_url = passwords.alissa.bench_url + "/api/2/patients/" + str(patient_id) + "/lab_results"
     json_data = {
         'dataFileId' : data_file_id,
         'sampleIdentifier' : sample_identifier
