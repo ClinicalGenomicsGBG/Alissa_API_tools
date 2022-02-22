@@ -113,7 +113,8 @@ def get_data_file_by_Name(name, token) -> list:
 
 def post_vcf_to_alissa(file_info : FileInfo, token):
     """Create post request for uploading a VCF from local machine to Alissa."""
-    files_list=[ ('file',(file_info.originalName,open(file_info.originalPath,'rb'),'application/octet-stream'))]
+    fileinfo = (file_info.originalName, open(file_info.originalPath,'rb'), 'application/octet-stream')
+    files_list=[ ('file', fileinfo) ]
     resource_url_postvcf = passwords.alissa.bench_url + "/api/2/data_files"
     response = requests.post(resource_url_postvcf,
                              params = {'type': 'VCF_FILE'},
