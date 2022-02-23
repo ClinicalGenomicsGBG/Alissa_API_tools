@@ -72,9 +72,9 @@ class cggPatient:
                                 params={'accessionNumber' : self.accession_number},
                                 headers = {'Authorization' : self.token})
         patient_list = json.loads(response.text) # List of dict entries FIXME ??
-	if patient_list:
-		return patient_list[0]
-	return None
+        if patient_list:
+            return patient_list[0]
+        return None
         
     def exists(self):
         """Return patient entry exists."""
@@ -161,10 +161,10 @@ def main():
     if token:
 	
 	#Parameters required for 1-creating patient, 2-uploading VCF file and 3-linking patient and VCF file.
-        accession_number = "test-patient_220221_3" #SLIMS: Sctx.sample_name
+        accession_number = "test-patient_220223_1" #SLIMS: Sctx.sample_name
         folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
-        patient_sex = "FEMALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
-        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220221_2.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
+        patient_sex = "MALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
+        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220223.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
         name_in_vcf = "NA12878" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
 
         #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
