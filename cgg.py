@@ -66,8 +66,10 @@ class cggPatient:
                                 params={'accessionNumber' : self.accession_number},
                                 headers = {'Authorization' : self.token})
         patient_list = json.loads(response.text) # List of dict entries FIXME ??
-        return patient_list[0] if patient_list is not None and len(patient_list) > 0 else None
-
+	if patient_list:
+		return patient_list[0]
+	return None
+        
     def exists(self):
         """Return patient entry exists."""
         return bool(self.get_existing_patient())
