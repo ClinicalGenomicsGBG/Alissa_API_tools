@@ -88,7 +88,7 @@ class cggPatient:
                                  headers = {'Authorization' : self.token,
                                             'Content-Type': 'application/json'})
         response_body = json.loads(response.text)
-        if response_body is not None:
+        if response_body:
             return response_body['id']
         return        
 
@@ -105,7 +105,7 @@ class cggPatient:
 #cf bcm.py from row 84; functions: get_patient_by_name, create_patient (caution! The create_patient from api_client.py, not from bcm.py) (why are there two functions with the same name? Not practical).
 #
 
-def get_data_file_by_Name(name, token) -> list:
+def get_data_file_by_name(name, token):
     """Return a list with information about data file if it already exists in the system."""
     resource_url_postvcf = passwords.alissa.bench_url + "/api/2/data_files"
     response = requests.get(resource_url_postvcf,
@@ -124,7 +124,7 @@ def post_vcf_to_alissa(file_info : FileInfo, token):
                              files = files_list)
     response_body = json.loads(response.text)
 #    print(response_body)
-    if response_body is not None:
+    if response_body:
         return response_body['id']
     return
 
@@ -143,7 +143,7 @@ def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
                             headers = {'Authorization' : token, 'Content-Type': 'application/json'})
     response_body = json.loads(response.text)
 #    print(response_body)
-    if response_body is not None:
+    if response_body:
         return response_body['id']
     return
 
@@ -173,7 +173,7 @@ def main():
         
         #Check whether a data file exists, if not: upload it. In both cases: return internal data file id.
         name = os.path.basename(path)
-        data_file = get_data_file_by_Name(name, token)
+        data_file = get_data_file_by_name(name, token)
         if len(data_file) > 0:
             print('A VCF file with the same name already exists. Not attempting to upload it again.')
             data_file_id = data_file[0]['id']
@@ -191,5 +191,4 @@ def main():
         raise Exception('No token was generated. Investigate!')
    
 if __name__ == '__main__':
-
     main()
