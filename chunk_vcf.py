@@ -18,14 +18,18 @@ path_to_original_vcf = str(args[1]).strip()
 output_folder = str(args[2]).strip()
 
 original_name = os.path.basename(path_to_original_vcf)
-original_size = os.path.getsize(path_to_original_vcf)
+#original_size = os.path.getsize(path_to_original_vcf)
 original_folder = os.path.dirname(path_to_original_vcf)
 
+def check_size(vcf,size):
+    vcf_size = os.path.getsize(vcf)
+    return bool(vcf_size > size)
+
 #TODO possibly later: instead of raising an exception, exit the process.
-if original_size == 0:
+if check_size(path_to_original_vcf,0):
     raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
 
-elif original_size >= 240_000_000:
+elif check_size(path_to_original_vcf,240_000_000):
     print("The file is larger than 240 MiB and needs to be splitted into smaller VCFs.")
 
     #Identify  whether the file is gzipped. If no, it first needs to be compressed.
@@ -68,9 +72,7 @@ elif original_size >= 240_000_000:
 
     #Check the size after splitting.
     # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
-    size_vcf1 = os.path.getsize(vcf1)
-    size_vcf2 = os.path.getsize(vcf2)
-    if size_vcf1 >= 240_000_000 or size_vcf2 >= 240_000_000:
+    if check_size(vcf1,240_000_000) or check_size(vcf2,240_000_000):
         raise Exception(f'One of the files is still larger than 240 MiB. Investigate. Files to control: {vcf1} and {vcf2}.')
     else:
         VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
