@@ -71,14 +71,15 @@ def main():
         if path_to_original_vcf.endswith('vcf.gz'):
             vcf_to_index = path_to_original_vcf
 
-        elif original_name.endswith('vcf'):
+        elif path_to_original_vcf.endswith('vcf'):
+            print("The VCF will be bgzipped.")
             vcf_to_index = bgzip(path_to_original_vcf,output_folder)
  
         else:
             raise Exception('The input file should be a VCF (.vcf or .vcf.gz).')
         
-        if vcf_larger_than(path_to_original_vcf,240_000_000):
-            print("The file is larger than 240 MiB and needs to be splitted into smaller VCFs.")
+        if vcf_larger_than(vcf_to_index,240_000_000):
+            print("The file is larger than 240 MiB and will be splitted into two VCFs.")
                   
             #Index the VCF.
             index(vcf_to_index)
@@ -91,15 +92,13 @@ def main():
             vcf1 = new_vcfs[0]
             vcf2 = new_vcfs[1]
             if vcf_larger_than(vcf1,240_000_000) or vcf_larger_than(vcf2,240_000_000):
-                raise Exception(f'One of the files is still larger than 240 MiB. Investigate. Files to control: {vcf1} and {vcf2}.')
+                raise Exception(f'One of the files is still larger than 240 MiB. Please investigate. Files to control: {vcf1} and {vcf2}.')
             else:
                 VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
                 VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
-                print(VCF1.originalPath)
     
         else:
             VCF = FileInfo(vcf_to_index,os.path.basename(vcf_to_index))
-            print(VCF.originalPath)
 
 if __name__ == '__main__':
     main()
