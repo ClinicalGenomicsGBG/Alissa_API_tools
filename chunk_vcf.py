@@ -95,11 +95,11 @@ def main():
             else:
                 VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
                 VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
+                print(VCF1.originalPath)
     
         else:
-            # TODO update this - it depends whether the VCF had to be compressed or not.
-            original_name = os.path.basename(path_to_original_vcf)
-            VCF = FileInfo(path_to_original_vcf, original_name)
+            VCF = FileInfo(vcf_to_index,os.path.basename(vcf_to_index))
+            print(VCF.originalPath)
 
 if __name__ == '__main__':
     main()
