@@ -65,9 +65,7 @@ def main():
     if not vcf_larger_than(path_to_original_vcf,0):
         raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
 
-    elif vcf_larger_than(path_to_original_vcf,240_000_000):
-        print("The file is larger than 240 MiB and needs to be splitted into smaller VCFs.")
-
+    else:
         #Identify whether the file is gzipped. If no, it needs to be compressed.
         # Should the logic to check whether the file is already compressed be in bgzip() ?
         if path_to_original_vcf.endswith('vcf.gz'):
@@ -78,26 +76,30 @@ def main():
  
         else:
             raise Exception('The input file should be a VCF (.vcf or .vcf.gz).')
-
-        #Index the VCF.
-        index(vcf_to_index)
-
-        #Split the VCF.
-        new_vcfs = split(vcf_to_index,output_folder)
-
-        #Check the size after splitting.
-        # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
-        vcf1 = new_vcfs[0]
-        vcf2 = new_vcfs[1]
-        if vcf_larger_than(vcf1,240_000_000) or vcf_larger_than(vcf2,240_000_000):
-            raise Exception(f'One of the files is still larger than 240 MiB. Investigate. Files to control: {vcf1} and {vcf2}.')
-        else:
-            VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
-            VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
+        
+        if vcf_larger_than(path_to_original_vcf,240_000_000):
+            print("The file is larger than 240 MiB and needs to be splitted into smaller VCFs.")
+                  
+            #Index the VCF.
+            index(vcf_to_index)
+            
+            #Split the VCF.
+            new_vcfs = split(vcf_to_index,output_folder)
+            
+            #Check the size after splitting.
+            # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
+            vcf1 = new_vcfs[0]
+            vcf2 = new_vcfs[1]
+            if vcf_larger_than(vcf1,240_000_000) or vcf_larger_than(vcf2,240_000_000):
+                raise Exception(f'One of the files is still larger than 240 MiB. Investigate. Files to control: {vcf1} and {vcf2}.')
+            else:
+                VCF1 = FileInfo(vcf1,os.path.basename(vcf1))
+                VCF2 = FileInfo(vcf2,os.path.basename(vcf2))
     
-    else:
-        original_name = os.path.basename(path_to_original_vcf)
-        VCF = FileInfo(path_to_original_vcf, original_name)
+        else:
+            # TODO update this - it depends whether the VCF had to be compressed or not.
+            original_name = os.path.basename(path_to_original_vcf)
+            VCF = FileInfo(path_to_original_vcf, original_name)
 
 if __name__ == '__main__':
     main()
