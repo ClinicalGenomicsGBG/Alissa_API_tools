@@ -23,7 +23,7 @@ def vcf_larger_than(vcf, size):
     return bool(vcf_size > size)
 
 def bgzip(vcf, outfolder):
-    """Check whether input is .vcf or .vcf.gz. If it is .vcf, bgzip it."""
+    """Bgzip VCF file."""
     if vcf.endswith('vcf.gz'):
         bgzipped_vcf = vcf
     elif vcf.endswith('vcf'):
@@ -32,8 +32,6 @@ def bgzip(vcf, outfolder):
         bgzipped_vcf = os.path.join(outfolder, basename + ".gz")
         command_bgzip = ["bcftools", "view", "--output-type", "z", "--output", bgzipped_vcf, vcf]
         subprocess.run(command_bgzip)
-    else:
-        raise Exception('The input file should be a VCF (.vcf or .vcf.gz).')
     return bgzipped_vcf
 
 def index(vcf):
@@ -72,6 +70,9 @@ def main():
     # TODO possibly later: instead of raising an exception, exit the process.
     if not vcf_larger_than(path_to_original_vcf, 0):
         raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
+
+    if not (path_to_original_vcf.endswith('vcf.gz') or path_to_original_vcf.endswith('vcf')):
+        raise Exception('The input file should be a VCF (.vcf or .vcf.gz).') 
 
     else:
         vcf_to_index = bgzip(path_to_original_vcf, output_folder)
