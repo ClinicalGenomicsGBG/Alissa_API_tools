@@ -10,6 +10,7 @@ import passwords
 import requests
 import json
 import os
+import chunk_vcf
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
@@ -161,11 +162,11 @@ def main():
     if token:
 	
 	#Parameters required for 1-creating patient, 2-uploading VCF file and 3-linking patient and VCF file.
-        accession_number = "test-patient_220223_1" #SLIMS: Sctx.sample_name
+        accession_number = "test-patient_220307_2" #SLIMS: Sctx.sample_name
         folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
         patient_sex = "MALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
-        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220223.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
-        name_in_vcf = "NA12878" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
+#        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220223.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
+        name_in_vcf = "NA24143" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
 
         #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
         patient = cggPatient(token, accession_number, folder_name, patient_sex)
@@ -176,21 +177,26 @@ def main():
         else:
             patient_id = patient.create()
         print(patient_id)
-        
-        #Check whether a data file exists, if not: upload it. In both cases: return internal data file id.
-        name = os.path.basename(path)
-        data_file = get_data_file_by_name(name, token)
-        if len(data_file) > 0:
-            print('A VCF file with the same name already exists. Not attempting to upload it again.')
-            data_file_id = data_file[0]['id']
-        else: 
-            vcf_file_info = FileInfo(path,name)
-            data_file_id = post_vcf_to_alissa(vcf_file_info, token)
-        print(data_file_id)
 
-        #Link data file to patient (i.e. create a lab result). If the lab result already exists: this will result in an error.
-        labresult = link_vcf_to_patient(patient_id, data_file_id, name_in_vcf, token)
-        print(labresult)
+        #Check size of VCF file. If larger than 240 MiB: split it. Return the paths to the chunks (or to the VCF of choice).
+        vcfs = chunk_vcf.main() #That works only if the arguments are hardcoded in the chunk_vcf module. Not great. What would be the alternative?
+        
+        #Loop over the items in vcfs.
+        for path in vcfs:
+            #Check whether a data file exists, if not: upload it. In both cases: return internal data file id.
+            name = os.path.basename(path)
+            data_file = get_data_file_by_name(name, token)
+            if len(data_file) > 0:
+                print('A VCF file with the same name already exists. Not attempting to upload it again.')
+                data_file_id = data_file[0]['id']
+            else: 
+                vcf_file_info = FileInfo(path,name)
+                data_file_id = post_vcf_to_alissa(vcf_file_info, token)
+            print(data_file_id)
+
+            #Link data file to patient (i.e. create a lab result). If the lab result already exists: this will result in an error.
+            labresult = link_vcf_to_patient(patient_id, data_file_id, name_in_vcf, token)
+            print(labresult)
 
     else:
         # TODO Add a raise for custom Exception or built-in

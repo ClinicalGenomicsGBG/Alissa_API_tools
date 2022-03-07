@@ -7,15 +7,17 @@ import sys
 import os
 import subprocess
 
-args = sys.argv
-path_to_original_vcf = str(args[1]).strip()
-output_folder = str(args[2]).strip()
+#args = sys.argv
+#path_to_original_vcf = str(args[1]).strip()
+#output_folder = str(args[2]).strip()
+path_to_original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz'
+output_folder = '/home/xbregw/Alissa_upload/VCFs/chunks'
 
-class FileInfo:
-    """Create object with basic information to be used in VCF upload to Alissa via the API."""
-    def __init__(self, originalPath, originalName):
-        self.originalPath = originalPath
-        self.originalName = originalName
+#class FileInfo:
+#    """Create object with basic information to be used in VCF upload to Alissa via the API."""
+#    def __init__(self, originalPath, originalName):
+#        self.originalPath = originalPath
+#        self.originalName = originalName
 
 def vcf_larger_than(vcf, size):
     """Return True if the size of the VCF is larger than a given size."""
@@ -43,7 +45,7 @@ def index(vcf):
         subprocess.run(command_index)
 
 def split_vcf(vcf, outfolder):
-    """Split a VCF into two based on pre-defined sets of contigs."""
+    """Split a VCF into two based on pre-defined sets of contigs. Return a list with the paths to the chunks."""
     basename = os.path.basename(vcf).replace('.vcf.gz', '')
     vcf1 = os.path.join(outfolder, basename + "_chr1-8.vcf.gz")
     vcf2 = os.path.join(outfolder, basename + "_chr9-hs37d5.vcf.gz")
@@ -88,15 +90,18 @@ def main():
             
             #Check the size after splitting.
             # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
-            vcf1 = new_vcfs[0]
-            vcf2 = new_vcfs[1]
-            if vcf_larger_than(vcf1, 240_000_000) or vcf_larger_than(vcf2, 240_000_000):
-                raise Exception(f'One of the files is still larger than 240 MiB. Please investigate. Files to control: {vcf1} and {vcf2}.')
-            VCF1 = FileInfo(vcf1, os.path.basename(vcf1))
-            VCF2 = FileInfo(vcf2, os.path.basename(vcf2))
+#            vcf1 = new_vcfs[0]
+#            vcf2 = new_vcfs[1]
+#            if vcf_larger_than(vcf1, 240_000_000) or vcf_larger_than(vcf2, 240_000_000):
+            if any([vcf_larger_than(vcf, 240_000_000) for vcf in new_vcfs]):
+                raise Exception(f'One of the files is still larger than 240 MiB. Please investigate.') #TODO possibly: list the files to control.
+            return new_vcfs
+#            VCF1 = FileInfo(vcf1, os.path.basename(vcf1))
+#            VCF2 = FileInfo(vcf2, os.path.basename(vcf2))
     
         else:
-            VCF = FileInfo(vcf_to_index, os.path.basename(vcf_to_index))
+             return [vcf_to_index]
+#            VCF = FileInfo(vcf_to_index, os.path.basename(vcf_to_index))
 
 if __name__ == '__main__':
     main()
