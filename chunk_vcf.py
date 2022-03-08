@@ -1,7 +1,6 @@
-#Usage: python3 chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder
-#Example: python3 chunk_vcf.py /home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz /home/xbregw/Alissa_upload/VCFs/chunks
-#TODO Use e.g. /tmp on working node as the output folder
-#TODO package all/most of the logic into a class and make it non-Alissa specific to allow for reuse.
+#Usage: python3 chunk_vcf.py
+# The arguments are hardcoded (path_to_original_vcf, output_folder and max_size).
+# TODO Use e.g. /tmp on working node as the output folder
 
 import sys
 import os
@@ -12,6 +11,7 @@ import subprocess
 #output_folder = str(args[2]).strip()
 path_to_original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz'
 output_folder = '/home/xbregw/Alissa_upload/VCFs/chunks'
+max_size = 240_000_000
 
 #class FileInfo:
 #    """Create object with basic information to be used in VCF upload to Alissa via the API."""
@@ -79,8 +79,8 @@ def main():
     else:
         vcf_to_index = bgzip(path_to_original_vcf, output_folder)
  
-        if vcf_larger_than(vcf_to_index, 240_000_000):
-            print("The file is larger than 240 MiB and will be splitted into two VCFs.")
+        if vcf_larger_than(vcf_to_index, max_size):
+            print(f'The file is larger than {max_size} bytes and will be splitted into two VCFs.')
                   
             #Index the VCF.
             index(vcf_to_index)
@@ -93,8 +93,8 @@ def main():
 #            vcf1 = new_vcfs[0]
 #            vcf2 = new_vcfs[1]
 #            if vcf_larger_than(vcf1, 240_000_000) or vcf_larger_than(vcf2, 240_000_000):
-            if any([vcf_larger_than(vcf, 240_000_000) for vcf in new_vcfs]):
-                raise Exception(f'One of the files is still larger than 240 MiB. Please investigate.') #TODO possibly: list the files to control.
+            if any([vcf_larger_than(vcf, max_size) for vcf in new_vcfs]):
+                raise Exception(f'One of the files is still larger than {max_size} bytes. Please investigate.') #TODO possibly: list the files to control.
             return new_vcfs
 #            VCF1 = FileInfo(vcf1, os.path.basename(vcf1))
 #            VCF2 = FileInfo(vcf2, os.path.basename(vcf2))
