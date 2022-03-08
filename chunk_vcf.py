@@ -13,12 +13,6 @@ path_to_original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSX
 output_folder = '/home/xbregw/Alissa_upload/VCFs/chunks'
 max_size = 240_000_000
 
-#class FileInfo:
-#    """Create object with basic information to be used in VCF upload to Alissa via the API."""
-#    def __init__(self, originalPath, originalName):
-#        self.originalPath = originalPath
-#        self.originalName = originalName
-
 def vcf_larger_than(vcf, size):
     """Return True if the size of the VCF is larger than a given size."""
     vcf_size = os.path.getsize(vcf)
@@ -90,18 +84,12 @@ def main():
             
             #Check the size after splitting.
             # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
-#            vcf1 = new_vcfs[0]
-#            vcf2 = new_vcfs[1]
-#            if vcf_larger_than(vcf1, 240_000_000) or vcf_larger_than(vcf2, 240_000_000):
             if any([vcf_larger_than(vcf, max_size) for vcf in new_vcfs]):
                 raise Exception(f'One of the files is still larger than {max_size} bytes. Please investigate.') #TODO possibly: list the files to control.
             return new_vcfs
-#            VCF1 = FileInfo(vcf1, os.path.basename(vcf1))
-#            VCF2 = FileInfo(vcf2, os.path.basename(vcf2))
     
         else:
              return [vcf_to_index]
-#            VCF = FileInfo(vcf_to_index, os.path.basename(vcf_to_index))
 
 if __name__ == '__main__':
     main()
