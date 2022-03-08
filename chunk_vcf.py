@@ -20,14 +20,10 @@ def vcf_larger_than(vcf, size):
 
 def bgzip(vcf, outfolder):
     """Bgzip VCF file."""
-    if vcf.endswith('vcf.gz'):
-        bgzipped_vcf = vcf
-    elif vcf.endswith('vcf'):
-        print("The VCF will be bgzipped.")
-        basename = os.path.basename(vcf)
-        bgzipped_vcf = os.path.join(outfolder, basename + ".gz")
-        command_bgzip = ["bcftools", "view", "--output-type", "z", "--output", bgzipped_vcf, vcf]
-        subprocess.run(command_bgzip)
+    basename = os.path.basename(vcf)
+    bgzipped_vcf = os.path.join(outfolder, basename + ".gz")
+    command_bgzip = ["bcftools", "view", "--output-type", "z", "--output", bgzipped_vcf, vcf]
+    subprocess.run(command_bgzip)
     return bgzipped_vcf
 
 def index(vcf):
@@ -64,23 +60,28 @@ def split_vcf(vcf, outfolder):
 def main():
     #Check whether the input is not empty.
     # TODO possibly later: instead of raising an exception, exit the process.
-    if not vcf_larger_than(path_to_original_vcf, 0):
-        raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
-
     if not (path_to_original_vcf.endswith('vcf.gz') or path_to_original_vcf.endswith('vcf')):
         raise Exception('The input file should be a VCF (.vcf or .vcf.gz).') 
 
+    if not vcf_larger_than(path_to_original_vcf, 0):
+        raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
+
     else:
-        vcf_to_index = bgzip(path_to_original_vcf, output_folder)
+        if vcf.endswith('vcf'):
+            print("The VCF will be bgzipped.")
+            unindexed_vcf = bgzip(path_to_original_vcf, output_folder)
+
+        else:
+            unindexed_vcf = path_to_original_vcf
  
-        if vcf_larger_than(vcf_to_index, max_size):
+        if vcf_larger_than(unindexed_vcf, max_size):
             print(f'The file is larger than {max_size} bytes and will be splitted into two VCFs.')
                   
             #Index the VCF.
-            index(vcf_to_index)
+            index(unindexed_vcf)
             
             #Split the VCF.
-            new_vcfs = split_vcf(vcf_to_index, output_folder)
+            new_vcfs = split_vcf(unindexed_vcf, output_folder)
             
             #Check the size after splitting.
             # At the moment, manual intervention will be needed if the new files are still larger than the limit (e.g. to decide how to split the VCFs).
@@ -89,7 +90,7 @@ def main():
             return new_vcfs
     
         else:
-             return [vcf_to_index]
+             return [unindexed_vcf]
 
 if __name__ == '__main__':
     main()
