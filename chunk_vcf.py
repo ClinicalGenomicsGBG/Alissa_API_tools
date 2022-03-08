@@ -11,7 +11,7 @@ import subprocess
 #output_folder = str(args[2]).strip()
 path_to_original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz'
 output_folder = '/home/xbregw/Alissa_upload/VCFs/chunks'
-max_size = 240_000_000
+max_size = 100_000_000
 
 def vcf_larger_than(vcf, size):
     """Return True if the size of the VCF is larger than a given size."""
@@ -70,15 +70,13 @@ def split_vcf(vcf, outfolder, size):
       
         #Check the size of the two chunks. If one is larger than the given size: split again both files.
         if any([vcf_larger_than(newvcf, size) for newvcf in [vcf1, vcf2]]):
-            #TODO delete vcf1 and vcf2. Or it doesn't matter to keep them if we run on /tmp perhaps.
-            #TODO check that the following gives files of similar size.
-            vcf1A = os.path.join(outfolder, basename + "_chr1-3.vcf.gz")
-            vcf1B = os.path.join(outfolder, basename + "_chr4-8.vcf.gz")
+            vcf1A = os.path.join(outfolder, basename + "_chr1-4.vcf.gz")
+            vcf1B = os.path.join(outfolder, basename + "_chr5-8.vcf.gz")
             vcf2A = os.path.join(outfolder, basename + "_chr9-14.vcf.gz")
             vcf2B = os.path.join(outfolder, basename + "_chr15-hs37d5.vcf.gz")            
 
-            command_split_vcf1A = ["bcftools", "view", "--output-type", "z", "--output", vcf1A, "-r", "1,2,3", vcf]
-            command_split_vcf1B = ["bcftools", "view", "--output-type", "z", "--output", vcf1B, "-r", "4,5,6,7,8", vcf]
+            command_split_vcf1A = ["bcftools", "view", "--output-type", "z", "--output", vcf1A, "-r", "1,2,3,4", vcf]
+            command_split_vcf1B = ["bcftools", "view", "--output-type", "z", "--output", vcf1B, "-r", "5,6,7,8", vcf]
             command_split_vcf2A = ["bcftools", "view", "--output-type", "z", "--output", vcf2A, "-r", "9,10,11,12,13,14", vcf]
             command_split_vcf2B = ["bcftools", "view", "--output-type", "z", "--output", vcf2B, "-r", "15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5", vcf]
     
@@ -88,7 +86,7 @@ def split_vcf(vcf, outfolder, size):
             subprocess.run(command_split_vcf2B)
 
             if any([vcf_larger_than(newvcf, size) for newvcf in [vcf1A, vcf1B, vcf2A, vcf2B]]):
-                raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.') #TODO possibly: list the files to control.
+                raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.')
                 
             else:
                 return [vcf1A, vcf1B, vcf2A, vcf2B]
@@ -107,7 +105,7 @@ def main():
         raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
 
     else:
-        if vcf.endswith('vcf'):
+        if path_to_original_vcf.endswith('vcf'):
             print("The VCF will be bgzipped.")
             unindexed_vcf = bgzip(path_to_original_vcf, output_folder)
 
@@ -118,7 +116,7 @@ def main():
         index(unindexed_vcf)
             
         #Split the VCF.
-        new_vcfs = split_vcf(unindexed_vcf, output_folder)
+        new_vcfs = split_vcf(unindexed_vcf, output_folder, max_size)
             
         return new_vcfs
     
