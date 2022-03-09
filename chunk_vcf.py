@@ -93,32 +93,37 @@ def split_vcf(vcf, outfolder, size):
         
         else:
             return [vcf1, vcf2]
-
-
-def main():
-    #Check whether the input is not empty.
-    # TODO possibly later: instead of raising an exception, exit the process.
-    if not (path_to_original_vcf.endswith('vcf.gz') or path_to_original_vcf.endswith('vcf')):
+        
+def prepare_and_split_vcf(vcf, outfolder, size):
+    #Check input format.
+    if not (vcf.endswith('vcf.gz') or vcf.endswith('vcf')):
         raise Exception('The input file should be a VCF (.vcf or .vcf.gz).') 
 
-    if not vcf_larger_than(path_to_original_vcf, 0):
-        raise Exception(f'Please check this file: {path_to_original_vcf}, the size is 0.')
+    #Check that input is not empty.
+    # TODO possibly later: instead of raising an exception, exit the process.
+    if not vcf_larger_than(vcf, 0):
+        raise Exception(f'Please check this file: {vcf}, the size is 0.')
 
     else:
-        if path_to_original_vcf.endswith('vcf'):
+        if vcf.endswith('vcf'):
             print("The VCF will be bgzipped.")
-            unindexed_vcf = bgzip(path_to_original_vcf, output_folder)
+            unindexed_vcf = bgzip(vcf, outfolder)
 
         else:
-            unindexed_vcf = path_to_original_vcf
+            unindexed_vcf = vcf
  
         #Index the VCF.
         index(unindexed_vcf)
             
         #Split the VCF.
-        new_vcfs = split_vcf(unindexed_vcf, output_folder, max_size)
+        new_vcfs = split_vcf(unindexed_vcf, outfolder, size)
             
         return new_vcfs
+
+    
+def main():
+    chunks = prepare_and_split_vcf(path_to_original_vcf, output_folder, max_size)
+    return chunks
     
 if __name__ == '__main__':
     main()
