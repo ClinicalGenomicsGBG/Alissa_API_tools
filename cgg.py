@@ -146,11 +146,11 @@ def main():
     if token:
 	
 	#Parameters required for 1-creating patient, 2-uploading VCF file and 3-linking patient and VCF file.
-        accession_number = "test-patient_220307_2" #SLIMS: Sctx.sample_name
+        accession_number = "test-patient_220309_1" #SLIMS: Sctx.sample_name
         folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
         patient_sex = "MALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
-#        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_220223.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
-        name_in_vcf = "NA24143" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
+        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_20220309.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
+        name_in_vcf = "NA12878" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
 
         #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
         patient = cggPatient(token, accession_number, folder_name, patient_sex)
@@ -162,8 +162,8 @@ def main():
             patient_id = patient.create()
         print(patient_id)
 
-        #Check size of VCF file. If larger than 240 MiB: split it. Return the paths to the chunks (or to the VCF of choice).
-        vcfs = chunk_vcf.main() #That works only if the arguments are hardcoded in the chunk_vcf module. Not great. What would be the alternative?
+        #Check size of VCF file. If larger than a given size (240 MiB for Alissa): split it. Return the paths to the chunks (or to the VCF of choice).
+        vcfs = chunk_vcf.prepare_and_split_vcf(path, '/home/xbregw/Alissa_upload/VCFs/chunks', 240_000_000)
         
         #Loop over the items in vcfs.
         for path in vcfs:
