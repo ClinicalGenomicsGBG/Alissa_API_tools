@@ -68,7 +68,10 @@ def split_vcf(vcf, outfolder, size):
         else:
             subprocess.run(command_split_vcf2)
       
-        #Check the size of the two chunks. If one is larger than the given size: split again both files.
+        #Check the size of the two chunks. If one is larger than the given size: split in three.
+        #TODO implement the split in three. Splitting on: 1-5, 6-12, 13-hs37d5
+        
+        #Check the size of the three chunks. If one is larger than the given size: split in four.
         if any([vcf_larger_than(newvcf, size) for newvcf in [vcf1, vcf2]]):
             vcf1A = os.path.join(outfolder, basename + "_chr1-4.vcf.gz")
             vcf1B = os.path.join(outfolder, basename + "_chr5-8.vcf.gz")
