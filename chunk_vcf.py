@@ -16,7 +16,7 @@ max_size = 100_000_000
 def vcf_larger_than(vcf, size):
     """Return True if the size of the VCF is larger than a given size."""
     vcf_size = os.path.getsize(vcf)
-    return bool(vcf_size > size)
+    return vcf_size > size
 
 def bgzip(vcf, outfolder):
     """Bgzip VCF file."""
@@ -44,7 +44,7 @@ def split_vcf(vcf, outfolder, size):
     
     if not vcf_larger_than(vcf, size):
         print(f'The file is smaller than {size} bytes. It will not be splitted.')
-        return [vcf]
+        splitted = [vcf]
 
     else:
         print(f'The file is larger than {size} bytes and will be splitted into two VCFs.')
@@ -92,10 +92,12 @@ def split_vcf(vcf, outfolder, size):
                 raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.')
                 
             else:
-                return [vcf1A, vcf1B, vcf2A, vcf2B]
+                splitted = [vcf1A, vcf1B, vcf2A, vcf2B]
         
         else:
-            return [vcf1, vcf2]
+            splitted = [vcf1, vcf2]
+    
+    return splitted
         
 def prepare_and_split_vcf(vcf, outfolder, size):
     #Check input format.
@@ -103,7 +105,6 @@ def prepare_and_split_vcf(vcf, outfolder, size):
         raise Exception('The input file should be a VCF (.vcf or .vcf.gz).') 
 
     #Check that input is not empty.
-    # TODO possibly later: instead of raising an exception, exit the process.
     if not vcf_larger_than(vcf, 0):
         raise Exception(f'Please check this file: {vcf}, the size is 0.')
 
