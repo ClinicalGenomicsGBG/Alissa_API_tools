@@ -29,7 +29,7 @@ class OAuth2Client:
         self.client_id = passwords.alissa.username
         self.client_secret = passwords.alissa.password
         self.token_url = passwords.alissa.token_url
-        self.session = OAuth2Session(client = LegacyApplicationClient(client_id = self.client_id))
+        self.session = OAuth2Session(client=LegacyApplicationClient(client_id=self.client_id))
 
         # TODO Add token timer
         self._token = None
@@ -40,11 +40,11 @@ class OAuth2Client:
         if self._token:
             return self._token
 
-        response = self.session.fetch_token(token_url = self.token_url,
-                                            username = self.username,
-                                            password = self.password,
-                                            client_id = self.client_id,
-                                            client_secret = self.client_secret)
+        response = self.session.fetch_token(token_url=self.token_url,
+                                            username=self.username,
+                                            password=self.password,
+                                            client_id=self.client_id,
+                                            client_secret=self.client_secret)
         # FIXME This could be done better
         if self.session.authorized:
             self._token = response['token_type'] + " " + response['access_token']
@@ -69,7 +69,7 @@ class cggPatient:
     def get_existing_patient(self):
         """Return patient entry if it exists."""
         response = requests.get(self.resource_url,
-                                params={'accessionNumber' : self.accession_number},
+                                params = {'accessionNumber' : self.accession_number},
                                 headers = {'Authorization' : self.token})
         patient_list = json.loads(response.text) # List of dict entries FIXME ??
         if patient_list:
@@ -91,7 +91,7 @@ class cggPatient:
         }
         response = requests.post(self.resource_url,
                                  data = json.dumps(json_data),
-                                 headers = {'Authorization' : self.token,
+                                 headers = {'Authorization': self.token,
                                             'Content-Type': 'application/json'})
         response_body = json.loads(response.text)
         if response_body:
@@ -103,17 +103,17 @@ def get_data_file_by_name(name, token):
     resource_url_postvcf = os.path.join(passwords.alissa.bench_url, 'api/2/data_files')
     response = requests.get(resource_url_postvcf,
                             params = {'name': name},
-                            headers = {'Authorization' : token})
+                            headers = {'Authorization': token})
     return json.loads(response.text)  
 
-def post_vcf_to_alissa(file_info : FileInfo, token):
+def post_vcf_to_alissa(file_info: FileInfo, token):
     """Create post request for uploading a VCF from local machine to Alissa."""
     fileinfo = (file_info.originalName, open(file_info.originalPath,'rb'), 'application/octet-stream')
     files_list=[ ('file', fileinfo) ]
     resource_url_postvcf = os.path.join(passwords.alissa.bench_url, 'api/2/data_files')
     response = requests.post(resource_url_postvcf,
                              params = {'type': 'VCF_FILE'},
-                             headers = {'Authorization' : token},
+                             headers = {'Authorization': token},
                              files = files_list)
     response_body = json.loads(response.text)
     if response_body:
@@ -127,12 +127,12 @@ def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
     """
     lab_result_url = os.path.join(passwords.alissa.bench_url, 'api/2/patients/', str(patient_id), 'lab_results')
     json_data = {
-        'dataFileId' : data_file_id,
-        'sampleIdentifier' : sample_identifier
+        'dataFileId': data_file_id,
+        'sampleIdentifier': sample_identifier
     }
     response = requests.post(lab_result_url,
                             data = json.dumps(json_data),
-                            headers = {'Authorization' : token, 'Content-Type': 'application/json'})
+                            headers = {'Authorization': token, 'Content-Type': 'application/json'})
     response_body = json.loads(response.text)
     if response_body:
         return response_body['id']
