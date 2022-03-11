@@ -34,7 +34,18 @@ def index(vcf):
     else:
         subprocess.run(command_index)
 
-def split_vcf(vcf, outfolder, size):
+#TODO this is a draft - once I have written it out more or less, see which arguments are needed etc. Would a class be better? "basename" is defined several times I think. Etc.
+def split_vcf(root, suffix, regions):
+    output = os.path.join(root, suffix + 'vcf.gz')
+    commant_split = ["bcftools", "view", "--output-type", "z", "--output", output, "-r", regions, vcf]
+    if os.path.exists(output):
+        print(f'File {output} already exists, moving on.')
+        #What should happen then? "pass"?
+    else:
+        subprocess.run(command_split)
+    return output
+
+def prepare_chunk(vcf, outfolder, size):
     """Return a list of paths to compressed VCF files smaller than a given size.
 
     If the input is smaller than the given size, there is a single chunk.
@@ -50,53 +61,30 @@ def split_vcf(vcf, outfolder, size):
         print(f'The file is larger than {size} bytes and will be splitted into two VCFs.')
         
         basename = os.path.basename(vcf).replace('.vcf.gz', '')
-        vcf1 = os.path.join(outfolder, basename + "_chr1-8.vcf.gz")
-        vcf2 = os.path.join(outfolder, basename + "_chr9-hs37d5.vcf.gz")
+        root = os.path.join(outfolder, basename)
     
+        #TODO move the comment about regions somewhere else.
+        #TODO decide where the "split_in_2/3/4" lists should be. Here in the function, or in a config file?
         #The "-r" or "--regions" argument of "bcftools view" allows to subset a VCF file according to a list of regions. In this case we use contigs. The lists of contigs in command_split_vcf1 and command_split_vcf2 cover all the contigs in the VCF outputted by WOPR and result in two VCF of equivalent size.
-        # The output format is a compressed VCF.
-        command_split_vcf1 = ["bcftools", "view", "--output-type", "z", "--output", vcf1, "-r", "1,2,3,4,5,6,7,8", vcf]
-        command_split_vcf2 = ["bcftools",  "view", "--output-type", "z", "--output", vcf2, "-r", "9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5", vcf]
-    
-        if os.path.exists(vcf1):
-            print(f'File {vcf1} already exists, moving on.')
-        else:
-            subprocess.run(command_split_vcf1)
-    
-        if os.path.exists(vcf2):
-            print(f'File {vcf2} already exists, moving on.')
-        else:
-            subprocess.run(command_split_vcf2)
+        split_in_2 = [["_chr1-8","1,2,3,4,5,6,7,8"], ["_chr9-hs37d5","9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5"]]
+        split_in_3 = [["_chr1-5","1,2,3,4,5"], ["_chr6-12","6,7,8,9,10,11,12"], ["_chr13-hs37d5","13,14,15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5"]]
+        split_in_4 = [["_chr1-4","1,2,3,4"], ["_chr5-8","5,6,7,8"], ["_chr9-14","9,10,11,12,13,14"], ["_chr15-hs37d5","15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5"]]
+
+        #Split in two.
+        #TODO add a condition or logic for splitting in two (and not three or four).
+        splitted = []
+        for partition in split_in_2:
+            chunk = split_vcf(root, partition[0], partition[1])
+            splitted = splitted.append(chunk)
       
         #Check the size of the two chunks. If one is larger than the given size: split in three.
-        #TODO implement the split in three. Splitting on: 1-5, 6-12, 13-hs37d5
-        
+        #TODO if the splitting logic above works: do the same for three chunks.
+
         #Check the size of the three chunks. If one is larger than the given size: split in four.
-        if any([vcf_larger_than(newvcf, size) for newvcf in [vcf1, vcf2]]):
-            vcf1A = os.path.join(outfolder, basename + "_chr1-4.vcf.gz")
-            vcf1B = os.path.join(outfolder, basename + "_chr5-8.vcf.gz")
-            vcf2A = os.path.join(outfolder, basename + "_chr9-14.vcf.gz")
-            vcf2B = os.path.join(outfolder, basename + "_chr15-hs37d5.vcf.gz")            
 
-            command_split_vcf1A = ["bcftools", "view", "--output-type", "z", "--output", vcf1A, "-r", "1,2,3,4", vcf]
-            command_split_vcf1B = ["bcftools", "view", "--output-type", "z", "--output", vcf1B, "-r", "5,6,7,8", vcf]
-            command_split_vcf2A = ["bcftools", "view", "--output-type", "z", "--output", vcf2A, "-r", "9,10,11,12,13,14", vcf]
-            command_split_vcf2B = ["bcftools", "view", "--output-type", "z", "--output", vcf2B, "-r", "15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5", vcf]
-    
-            subprocess.run(command_split_vcf1A)
-            subprocess.run(command_split_vcf1B)
-            subprocess.run(command_split_vcf2A)
-            subprocess.run(command_split_vcf2B)
-
-            if any([vcf_larger_than(newvcf, size) for newvcf in [vcf1A, vcf1B, vcf2A, vcf2B]]):
-                raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.')
+#            if any([vcf_larger_than(newvcf, size) for newvcf in [vcf1A, vcf1B, vcf2A, vcf2B]]):
+#                raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.')
                 
-            else:
-                splitted = [vcf1A, vcf1B, vcf2A, vcf2B]
-        
-        else:
-            splitted = [vcf1, vcf2]
-    
     return splitted
         
 def prepare_and_split_vcf(vcf, outfolder, size):
@@ -120,7 +108,7 @@ def prepare_and_split_vcf(vcf, outfolder, size):
         index(unindexed_vcf)
             
         #Split the VCF.
-        new_vcfs = split_vcf(unindexed_vcf, outfolder, size)
+        new_vcfs = prepare_chunk(unindexed_vcf, outfolder, size)
             
         return new_vcfs
 
