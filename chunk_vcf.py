@@ -49,8 +49,8 @@ def split_vcf(vcf, root, suffix, regions):
 def prepare_chunk(vcf, outfolder, size):
     """Return a list of paths to compressed VCF files smaller than a given size.
 
-    If the input is smaller than the given size, there is a single chunk.
-    If the input is larger than the given size, the function will in a first instance return two chunks, according to a pre-defined list of contigs resulting in two files of similar size (assuming the initial file contains the entire genome). If these chunks are still larger than the given size, each will be splitted once more, returning a total of four chunks.
+    If the input is smaller than the given size, there is a single vcf.
+    If the input is larger than the given size, the function will in a first instance return two chunks, according to a pre-defined list of contigs resulting in two files of similar size (assuming the initial file contains the entire genome). If these chunks are still larger than the given size, the input will be splitted in three. If these chunks are larger than the given size, the input will be splitted in four.
     Return an exception if one of the four chunks is larger than the given size. 
     """
     
@@ -64,34 +64,35 @@ def prepare_chunk(vcf, outfolder, size):
         basename = os.path.basename(vcf).replace('.vcf.gz', '')
         root = os.path.join(outfolder, basename)
 
-        #TODO move the comment about regions somewhere else.
         #TODO decide where the "split_in_2/3/4" lists should be. Here in the function, or in a config file?
-        #The "-r" or "--regions" argument of "bcftools view" allows to subset a VCF file according to a list of regions. In this case we use contigs. The lists of contigs in command_split_vcf1 and command_split_vcf2 cover all the contigs in the VCF outputted by WOPR and result in two VCF of equivalent size.
         split_in_2 = [["_chr1-8","1,2,3,4,5,6,7,8"], ["_chr9-hs37d5","9,10,11,12,13,14,15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5"]]
         split_in_3 = [["_chr1-5","1,2,3,4,5"], ["_chr6-12","6,7,8,9,10,11,12"], ["_chr13-hs37d5","13,14,15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5"]]
         split_in_4 = [["_chr1-4","1,2,3,4"], ["_chr5-8","5,6,7,8"], ["_chr9-14","9,10,11,12,13,14"], ["_chr15-hs37d5","15,16,17,18,19,20,21,22,X,Y,MT,GL000207.1,GL000226.1,GL000229.1,GL000231.1,GL000210.1,GL000239.1,GL000235.1,GL000201.1,GL000247.1,GL000245.1,GL000197.1,GL000203.1,GL000246.1,GL000249.1,GL000196.1,GL000248.1,GL000244.1,GL000238.1,GL000202.1,GL000234.1,GL000232.1,GL000206.1,GL000240.1,GL000236.1,GL000241.1,GL000243.1,GL000242.1,GL000230.1,GL000237.1,GL000233.1,GL000204.1,GL000198.1,GL000208.1,GL000191.1,GL000227.1,GL000228.1,GL000214.1,GL000221.1,GL000209.1,GL000218.1,GL000220.1,GL000213.1,GL000211.1,GL000199.1,GL000217.1,GL000216.1,GL000215.1,GL000205.1,GL000219.1,GL000224.1,GL000223.1,GL000195.1,GL000212.1,GL000222.1,GL000200.1,GL000193.1,GL000194.1,GL000225.1,GL000192.1,NC_007605,hs37d5"]]
 
         #Split in two.
-        #TODO add a condition. Option 1: based on the size of the VCF, decide to split in 2, 3 or 4. Option 2: split in 2, check size, split in 3 if needed, check size, split in 4 if needed.
         splitted = []
         for partition in split_in_2:
             chunk = split_vcf(vcf, root, partition[0], partition[1])
             splitted.append(chunk)
-      
-        #Split in three.
-        #TODO add a condition.
-#        for partition in split_in_3:
-#            chunk = split_vcf(vcf, root, partition[0], partition[1])
-#            splitted.append(chunk)
 
-        #Split in four.
-        #TODO add a condition.
-#        for partition in split_in_4:
-#            chunk = split_vcf(vcf, root, partition[0], partition[1])
-#            splitted.append(chunk)
+        if any([vcf_larger_than(newvcf, size) for newvcf in splitted ]):       
+            print(f'At least on of the files is larger than {size} bytes. The input will be splitted into three VCFs.')
+            #Split in three.
+            splitted = []
+            for partition in split_in_3:
+                chunk = split_vcf(vcf, root, partition[0], partition[1])
+                splitted.append(chunk)
 
-#            if any([vcf_larger_than(newvcf, size) for newvcf in splitted ]):
-#                raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.')
+            if any([vcf_larger_than(newvcf, size) for newvcf in splitted ]):
+                print(f'At least one of the files is larger than {size} bytes. The input will be splitted into four VCFs.')
+                #Split in four.
+                splitted = []
+                for partition in split_in_4:
+                    chunk = split_vcf(vcf, root, partition[0], partition[1])
+                    splitted.append(chunk)
+
+                if any([vcf_larger_than(newvcf, size) for newvcf in splitted ]):
+                    raise Exception(f'One of the files is still larger than {size} bytes. Please investigate.')
                 
     return splitted
         
