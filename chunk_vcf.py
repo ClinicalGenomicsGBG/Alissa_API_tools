@@ -35,9 +35,11 @@ def index(vcf):
         subprocess.run(command_index)
 
 #TODO this is a draft - once I have written it out more or less, see which arguments are needed etc. Would a class be better? "basename" is defined several times I think. Etc.
-def split_vcf(root, suffix, regions):
-    output = os.path.join(root, suffix + 'vcf.gz')
-    commant_split = ["bcftools", "view", "--output-type", "z", "--output", output, "-r", regions, vcf]
+def split_vcf(vcf, root, suffix, regions):
+#    output = os.path.join(root, suffix + '.vcf.gz')
+    output = root + suffix + '.vcf.gz' #TODO replace by something nicer. os.path.join does not give the expected result (removes the file name from root).
+    print(output)
+    command_split = ["bcftools", "view", "--output-type", "z", "--output", output, "-r", regions, vcf]
     if os.path.exists(output):
         print(f'File {output} already exists, moving on.')
         #What should happen then? "pass"?
@@ -62,7 +64,8 @@ def prepare_chunk(vcf, outfolder, size):
         
         basename = os.path.basename(vcf).replace('.vcf.gz', '')
         root = os.path.join(outfolder, basename)
-    
+        print(root)
+
         #TODO move the comment about regions somewhere else.
         #TODO decide where the "split_in_2/3/4" lists should be. Here in the function, or in a config file?
         #The "-r" or "--regions" argument of "bcftools view" allows to subset a VCF file according to a list of regions. In this case we use contigs. The lists of contigs in command_split_vcf1 and command_split_vcf2 cover all the contigs in the VCF outputted by WOPR and result in two VCF of equivalent size.
@@ -74,7 +77,8 @@ def prepare_chunk(vcf, outfolder, size):
         #TODO add a condition or logic for splitting in two (and not three or four).
         splitted = []
         for partition in split_in_2:
-            chunk = split_vcf(root, partition[0], partition[1])
+            print(partition[0])
+            chunk = split_vcf(vcf, root, partition[0], partition[1])
             splitted = splitted.append(chunk)
       
         #Check the size of the two chunks. If one is larger than the given size: split in three.
