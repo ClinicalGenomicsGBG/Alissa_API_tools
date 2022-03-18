@@ -76,7 +76,7 @@ def prepare_chunk(vcf, outfolder, size):
             splitted.append(chunk)
 
         if any([vcf_larger_than(newvcf, size) for newvcf in splitted ]):       
-            print(f'At least on of the files is larger than {size} bytes. The input will be splitted into three VCFs.')
+            print(f'At least one of the files is larger than {size} bytes. The input will be splitted into three VCFs.')
             #Split in three.
             splitted = []
             for partition in split_in_3:
