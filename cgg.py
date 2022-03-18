@@ -82,7 +82,7 @@ class cggPatient:
         return bool(self.get_existing_patient())
 
     def create(self):
-        """Create the patient."""
+        """Create the patient. Return the internal Alissa ID for the patient."""
         json_data = {
             'accessionNumber': self.accession_number,
             'folderName': self.folder_name,
@@ -99,28 +99,37 @@ class cggPatient:
             return response_body['id']
         return        
 
-def get_data_file_by_name(name, token):
-    """Return a list with information about data file if it already exists in the system."""
-    resource_url_postvcf = os.path.join(passwords.alissa.bench_url, 'api/2/data_files')
-    response = requests.get(resource_url_postvcf,
-                            params = {'name': name},
-                            headers = {'Authorization': token})
-    return json.loads(response.text)  
+class cggVCF:
+    """Create an object with information about a VCF.
 
-def post_vcf_to_alissa(file_info: FileInfo, token):
-    """Create post request for uploading a VCF from local machine to Alissa."""
-    fileinfo = (file_info.originalName, open(file_info.originalPath,'rb'), 'application/octet-stream')
-    files_list=[ ('file', fileinfo) ]
-    resource_url_postvcf = os.path.join(passwords.alissa.bench_url, 'api/2/data_files')
-    response = requests.post(resource_url_postvcf,
+    Includes functions to check wehther a data file exists in Alissa, and to upload a data file.
+    """
+    def __init__(self, token, vcf, resource_url_post): #I might need to pass a FileInfo object here. 
+        self.token = token
+        self.vcf = vcf
+        self.resource_url_post = os.path.join(passwords.alissa.bench_url, 'api/2/data_files') 
+
+    def get_data_file_by_name(self):
+        """Return a list with information about data file if it already exists in the system."""
+        response = requests.get(self.resource_url_postvcf,
+                                params = {'name': self.vcf},
+                                headers = {'Authorization': self.token})
+        return json.loads(response.text)  
+
+    def post_vcf_to_alissa(file_info: FileInfo, token): #TODO Here I need to feed in the information in a different way. Can FileInfo be part of self?
+        """Create post request for uploading a VCF from local machine to Alissa."""
+        fileinfo = (file_info.originalName, open(file_info.originalPath,'rb'), 'application/octet-stream')
+        files_list=[ ('file', fileinfo) ]
+        response = requests.post(resource_url_post,
                              params = {'type': 'VCF_FILE'},
                              headers = {'Authorization': token},
                              files = files_list)
-    response_body = json.loads(response.text)
-    if response_body:
-        return response_body['id']
-    return
+        response_body = json.loads(response.text)
+        if response_body:
+            return response_body['id']
+        return
 
+#TODO should this function be included in the class cggVCF and if yes, how do I deal with the arguments?
 def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
     """Create a lab result i.e. link a patient to a VCF file, using Alissa's internal identifiers.
 
