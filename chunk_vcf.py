@@ -23,7 +23,10 @@ def bgzip(vcf, outfolder):
     basename = os.path.basename(vcf)
     bgzipped_vcf = os.path.join(outfolder, basename + ".gz")
     command_bgzip = ["bcftools", "view", "--output-type", "z", "--output", bgzipped_vcf, vcf]
-    subprocess.run(command_bgzip)
+    if os.path.isfile(bgzipped_vcf):
+        print('File exists already, skipping compression.')
+    else:
+        subprocess.run(command_bgzip)
     return bgzipped_vcf
 
 def index(vcf):
