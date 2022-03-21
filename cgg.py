@@ -16,12 +16,6 @@ import chunk_vcf
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
 
-class FileInfo:
-    """Create object with basic information to be used in VCF upload to Alissa via the API."""
-    def __init__(self, originalPath, originalName):
-        self.originalPath = originalPath
-        self.originalName = originalName
-
 class OAuth2Client:
     """Read credentials and return a token."""
     def __init__(self):
@@ -102,51 +96,60 @@ class cggPatient:
 class cggVCF:
     """Create an object with information about a VCF.
 
-    Includes functions to check wehther a data file exists in Alissa, and to upload a data file.
+    Includes functions to check whether a data file exists in Alissa and to upload a data file.
     """
-    def __init__(self, token, vcf, resource_url_post): #I might need to pass a FileInfo object here. 
+    def __init__(self, token, path): 
         self.token = token
-        self.vcf = vcf
+        self.path = path
         self.resource_url_post = os.path.join(passwords.alissa.bench_url, 'api/2/data_files') 
+        self.name = os.path.basename(path)
 
     def get_data_file_by_name(self):
         """Return a list with information about data file if it already exists in the system."""
-        response = requests.get(self.resource_url_postvcf,
-                                params = {'name': self.vcf},
+        response = requests.get(self.resource_url_post,
+                                params = {'name': self.name},
                                 headers = {'Authorization': self.token})
         return json.loads(response.text)  
 
-    def post_vcf_to_alissa(file_info: FileInfo, token): #TODO Here I need to feed in the information in a different way. Can FileInfo be part of self?
+    def post_vcf_to_alissa(self):
         """Create post request for uploading a VCF from local machine to Alissa."""
-        fileinfo = (file_info.originalName, open(file_info.originalPath,'rb'), 'application/octet-stream')
+        fileinfo = (self.name, open(self.path,'rb'), 'application/octet-stream')
         files_list=[ ('file', fileinfo) ]
-        response = requests.post(resource_url_post,
+        response = requests.post(self.resource_url_post,
                              params = {'type': 'VCF_FILE'},
-                             headers = {'Authorization': token},
+                             headers = {'Authorization': self.token},
                              files = files_list)
         response_body = json.loads(response.text)
         if response_body:
             return response_body['id']
         return
 
-#TODO should this function be included in the class cggVCF and if yes, how do I deal with the arguments?
-def link_vcf_to_patient(patient_id, data_file_id, sample_identifier, token):
-    """Create a lab result i.e. link a patient to a VCF file, using Alissa's internal identifiers.
+class cggLabResult:
+    """Create an object with information about a lab result in Alissa API.
 
-    The sample identifier is the sample ID in the VCF file header line.
-    """
-    lab_result_url = os.path.join(passwords.alissa.bench_url, 'api/2/patients/', str(patient_id), 'lab_results')
-    json_data = {
-        'dataFileId': data_file_id,
-        'sampleIdentifier': sample_identifier
-    }
-    response = requests.post(lab_result_url,
+    The sample identifier is the sample ID in the VCF file header line."""
+    def __init__(self, token, patient_id, data_file_id, sample_identifier):
+         self.token = token
+         self.patient_id = patient_id
+         self.data_file_id = data_file_id
+         self.sample_identifier = sample_identifier
+
+    #TODO should I include a function that checks whether the lab result exists?
+
+    def link_vcf_to_patient(self):
+        """Create a lab result i.e. link a patient to a VCF file using Alissa's internal identifiers."""
+        lab_result_url = os.path.join(passwords.alissa.bench_url, 'api/2/patients/', str(self.patient_id), 'lab_results')
+        json_data = {
+            'dataFileId': self.data_file_id,
+            'sampleIdentifier': self.sample_identifier
+        }
+        response = requests.post(lab_result_url,
                             data = json.dumps(json_data),
-                            headers = {'Authorization': token, 'Content-Type': 'application/json'})
-    response_body = json.loads(response.text)
-    if response_body:
-        return response_body['id']
-    return
+                            headers = {'Authorization': self.token, 'Content-Type': 'application/json'})
+        response_body = json.loads(response.text)
+        if response_body:
+            return response_body['id']
+        return
 
  
 def main():
@@ -156,11 +159,11 @@ def main():
     if token:
 	
 	#Parameters required for 1-creating patient, 2-uploading VCF file and 3-linking patient and VCF file.
-        accession_number = "test-patient_220309_1" #SLIMS: Sctx.sample_name
+        accession_number = "test-patient_220321_2" #SLIMS: Sctx.sample_name
         folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
         patient_sex = "MALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
-        path = '/home/xbregw/Alissa_upload/VCFs/known_variants_20220309.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
-        name_in_vcf = "NA12878" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
+        path = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
+        name_in_vcf = "NA24143" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
 
         #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
         patient = cggPatient(token, accession_number, folder_name, patient_sex)
@@ -177,20 +180,20 @@ def main():
         
         #Loop over the items in vcfs.
         for path in vcfs:
+            vcf = cggVCF(token, path)
             #Check whether a data file exists, if not: upload it. In both cases: return internal data file id.
-            name = os.path.basename(path)
-            data_file = get_data_file_by_name(name, token)
+            data_file = vcf.get_data_file_by_name()
             if len(data_file) > 0:
                 print('A VCF file with the same name already exists. Not attempting to upload it again.')
                 data_file_id = data_file[0]['id']
             else: 
-                vcf_file_info = FileInfo(path,name)
-                data_file_id = post_vcf_to_alissa(vcf_file_info, token)
+                 data_file_id = vcf.post_vcf_to_alissa()
             print(data_file_id)
 
             #Link data file to patient (i.e. create a lab result). If the lab result already exists: this will result in an error.
-            labresult = link_vcf_to_patient(patient_id, data_file_id, name_in_vcf, token)
-            print(labresult)
+            labresult = cggLabResult(token, patient_id, data_file_id, name_in_vcf)
+            labresult_id = labresult.link_vcf_to_patient()
+            print(labresult_id)
 
     else:
         # TODO Add a raise for custom Exception or built-in
