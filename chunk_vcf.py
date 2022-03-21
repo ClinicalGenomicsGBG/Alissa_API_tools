@@ -46,7 +46,9 @@ def split_vcf(vcf, outfolder, suffix, regions):
     if os.path.exists(output):
         print(f'File {output} already exists, moving on.')
     else:
-        subprocess.run(command_split)
+        split = subprocess.run(command_split)
+        if split.check_returncode() is not None:
+            raise Exception(f'The splitting of VCF {vcf} into {output} did not succeed.')
     return output
 
 def prepare_chunk(vcf, outfolder, size):
