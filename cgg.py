@@ -133,17 +133,22 @@ class cggLabResult:
          self.patient_id = patient_id
          self.data_file_id = data_file_id
          self.sample_identifier = sample_identifier
+         self.lab_result_url = os.path.join(passwords.alissa.bench_url, 'api/2/patients/', str(self.patient_id), 'lab_results')
 
-    #TODO should I include a function that checks whether the lab result exists?
+    def get_lab_result(self):
+        """Get lab result of a patient using Alissa internal patient ID."""
+        response = requests.get(self.lab_result_url,
+                                params = {'patientId': self.patient_id},
+                                headers = {'Authorization': self.token})
+        return json.loads(response.text) 
 
     def link_vcf_to_patient(self):
         """Create a lab result i.e. link a patient to a VCF file using Alissa's internal identifiers."""
-        lab_result_url = os.path.join(passwords.alissa.bench_url, 'api/2/patients/', str(self.patient_id), 'lab_results')
         json_data = {
             'dataFileId': self.data_file_id,
             'sampleIdentifier': self.sample_identifier
         }
-        response = requests.post(lab_result_url,
+        response = requests.post(self.lab_result_url,
                             data = json.dumps(json_data),
                             headers = {'Authorization': self.token, 'Content-Type': 'application/json'})
         response_body = json.loads(response.text)
@@ -173,7 +178,7 @@ def main():
             patient_id = existing_patient['id']
         else:
             patient_id = patient.create()
-        print(patient_id)
+        print(f'The patient ID is: {patient_id}.')
 
         #Check size of VCF file. If larger than a given size (240 MiB for Alissa): split it. Return the paths to the chunks (or to the VCF of choice).
         vcfs = chunk_vcf.prepare_and_split_vcf(path, '/home/xbregw/Alissa_upload/VCFs/chunks', 240_000_000)
@@ -188,12 +193,24 @@ def main():
                 data_file_id = data_file[0]['id']
             else: 
                  data_file_id = vcf.post_vcf_to_alissa()
-            print(data_file_id)
+            print(f'The data file ID is: {data_file_id}.')
 
-            #Link data file to patient (i.e. create a lab result). If the lab result already exists: this will result in an error.
+            #Check whether there are already lab results for that patient for all data files. If not, create lab results.
             labresult = cggLabResult(token, patient_id, data_file_id, name_in_vcf)
-            labresult_id = labresult.link_vcf_to_patient()
-            print(labresult_id)
+            prior_labresult = labresult.get_lab_result()
+            if len(prior_labresult) > 0:
+                exist = []
+                for result in prior_labresult:
+                    exist.append(result['dataFileId'])
+                if data_file_id in exist:
+                    print(f'There is a lab result for {data_file_id} already, skipping creating new lab result.') #TODO it would be great to print the corresponding lab result ID.
+                else:
+                    labresult_id = labresult.link_vcf_to_patient()
+                    print(f'The lab result ID is: {labresult_id}.')
+ 
+            else:
+                labresult_id = labresult.link_vcf_to_patient()
+                print(f'The lab result ID is: {labresult_id}.')
 
     else:
         # TODO Add a raise for custom Exception or built-in
