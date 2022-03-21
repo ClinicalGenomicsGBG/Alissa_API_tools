@@ -24,3 +24,16 @@ python3 cgg.py #Create a new patient
 python3 chunk_vcf.py /path/to/input/file.vcf.gz /path/to/output/folder #Create chunks of VCF file
 ```
 The arguments (e.g. patient ID or input VCF) have to be modified directly in ```cgg.py``` or ```chunk_vcf.py```.
+
+## Which Alissa instance should one use?
+
+We have two Alissa instances: one for testing and one for production. The credentials for both are included in the conda environment. If one wants to use the test instance, the following line should be included in `cgg.py`:
+
+```
+import passwords_test_instance as passwords
+```
+
+To use the production instance, replace the line by: 
+```
+import passwords as passwords
+```
