@@ -11,11 +11,6 @@ path_to_original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSX
 output_folder = '/home/xbregw/Alissa_upload/VCFs/chunks'
 max_size = 240_000_000
 
-def vcf_larger_than(vcf, size):
-    """Return True if the size of the VCF is larger than a given size."""
-    vcf_size = os.path.getsize(vcf)
-    return vcf_size > size
-
 def bgzip(vcf, outfolder):
     """Bgzip VCF file."""
     basename = os.path.basename(vcf)
@@ -51,12 +46,12 @@ def prepare_chunk(vcf, outfolder, size):
     """Return a list of paths to compressed VCF files smaller than a given size.
 
     If the input is smaller than the given size, there is a single vcf.
-    If the input is larger than the given size, the function will in a first instance return two chunks, according to a pre-defined list of contigs resulting in two files of similar size (assuming the initial file contains the entire genome). If these chunks are still larger than the given size, the input will be splitted in three. If these chunks are larger than the given size, the input will be splitted in four.
+    If the input is larger than the given size, the function will loop over a list of lists of contigs until either all files are smaller than the given size, or it runs out of lists of contigs. At the moment there are three lists available, so it will return two, three or four chunks.
     Return an exception if one of the four chunks is larger than the given size. 
     """
     
     splitted = [vcf]
-    toobig = any([vcf_larger_than(newvcf, size) for newvcf in splitted ]) #Initialize boolean that returns True if at least one of the files is too large.
+    toobig = any([os.path.getsize(newvcf) > size for newvcf in splitted ]) #Initialize boolean that returns True if at least one of the files is too large.
     i = 0 #Initialize count variable for while loop
 
     while i < len(lists_of_contigs.contig_lists) and toobig :
@@ -65,8 +60,7 @@ def prepare_chunk(vcf, outfolder, size):
             chunk = split_vcf(vcf, outfolder, partition[0], partition[1])
             splitted.append(chunk)        
         i = i + 1
-        toobig = any([vcf_larger_than(newvcf, size) for newvcf in splitted ])
-        print(toobig)
+        toobig = any([os.path.getsize(newvcf) > size for newvcf in splitted ])
         j = i + 1
         print(f'The VCF has been split into {j} chunks.')
 
@@ -82,7 +76,7 @@ def prepare_and_split_vcf(vcf, outfolder, size):
         raise Exception('The input file should be a VCF (.vcf or .vcf.gz).') 
 
     #Check that input is not empty.
-    if not vcf_larger_than(vcf, 0):
+    if os.path.getsize(vcf) == 0:
         raise Exception(f'Please check this file: {vcf}, the size is 0.')
 
     else:
