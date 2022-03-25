@@ -12,6 +12,7 @@ import requests
 import json
 import os
 import chunk_vcf
+import click
 
 from requests_oauthlib import OAuth2Session
 from oauthlib.oauth2 import LegacyApplicationClient
@@ -49,7 +50,7 @@ class OAuth2Client:
 class cggPatient:
     """Create an object with information about a patient.
 
-    In WOPR, the comments and family_id fields are not used. folder_name is usually Klinisk Genetik (KG) or Klinisk kemi (KK).
+    In WOPR, the comments and family_id fields are not used. folder_name is usually Klinisk Genetik (KG) or Klinisk Kemi (KK).
     """
     def __init__(self, token, accession_number,
                  folder_name='Default', sex='UNKNOWN', comments='', family_id=''):
@@ -156,62 +157,71 @@ class cggLabResult:
             return response_body['id']
         return
 
- 
-def main():
+def create_patient(token, accession, sex, alissa_folder):
+    """Create a patient in Alissa (unless the patient already exists, in which case a message is returned). Return the internal patient id."""
+    patient = cggPatient(token, accession, alissa_folder, sex)
+    if not patient.exists():
+        patient_id = patient.create()
+    else:
+        print('Patient exists.')
+        existing_patient = patient.get_existing_patient()
+        patient_id = existing_patient['id']
+    print(f'The patient ID is: {patient_id}.')
+    return(patient_id)
+
+def create_datafile(token, path):
+    """Create a datafile in Alissa (unless the data file already exists). Return the internal datafile id."""
+    vcf = cggVCF(token, path)
+    data_file = vcf.get_data_file_by_name()
+    if len(data_file) == 0:
+        data_file_id = vcf.post_vcf_to_alissa()
+    else: 
+        print('A VCF file with the same name already exists. Not attempting to upload it again.')
+        data_file_id = data_file[0]['id']
+    print(f'The data file ID is: {data_file_id}.')
+    return(data_file_id)
+
+def create_lab_result(token, patient_id, datafile_id, name_in_vcf):
+    """Create a lab result in Alissa (unless the lab result already exists)."""
+    labresult = cggLabResult(token, patient_id, datafile_id, name_in_vcf)
+    prior_labresult = labresult.get_lab_result()
+    if len(prior_labresult) > 0:
+        exist = []
+        for result in prior_labresult:
+            exist.append(result['dataFileId'])
+        if datafile_id in exist:
+            print(f'There is a lab result for {datafile_id} already, skipping creating new lab result.') #TODO it would be great to print the corresponding lab result ID.
+    else:
+        labresult_id = labresult.link_vcf_to_patient()
+        print(f'The lab result ID is: {labresult_id}.')
+    return #What should the function return? Set it up so it returns the lab result ID (will be a bit tricky if it existed already).
+
+@click.command()
+@click.option('-a', '--accession', required=True,
+             help='Patient accession number') #SLIMS: Sctx.sample_name
+@click.option('-s', '--sex', default='UNKNOWN', type=click.Choice(['FEMALE', 'MALE', 'UNKNOWN']),
+             help='Sex of the sample') #SLIMS: Sctx.slims_info['gender']
+@click.option('-f', '--alissa_folder', default='Default',
+             help='Folder in Alissa, for example "Klinisk Kemi" or "Klinisk Genetik"') #Should it also be a list with the different options? In WOPR tertiary.py: department_translate[Sctx.slims_info['department']]
+@click.option('-v', '--vcf_path', type=click.Path(exists=True),
+              help='Path to input VCF file') #SLIMS: Sctx.snv_cnv_vcf_path
+@click.option('-o', '--output_folder', default='/tmp',
+              help='Path to output folder')
+@click.option('-s', '--size', required=True, type=int,
+              help='Maximal size (in bp). If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
+@click.option('-n', '--name_in_vcf', required=True,
+             help='Sample ID in the VCF header row') #in WOPR it should be the same as Sctx.sample.name
+def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf):
     oauth2_client = OAuth2Client()
     token = oauth2_client.fetch_token()
 
     if token:
-	
-	#Parameters required for 1-creating patient, 2-uploading VCF file and 3-linking patient and VCF file.
-        accession_number = "test-patient_220321_2" #SLIMS: Sctx.sample_name
-        folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
-        patient_sex = "MALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
-        original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
-        name_in_vcf = "NA24143" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
-
-        #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
-        patient = cggPatient(token, accession_number, folder_name, patient_sex)
-        if patient.exists():     #An alternative to this function is to check whether the response of get_existing_patient is "None" (cf Agilent bcm.py row 88).
-            print('Patient exists.')
-            existing_patient = patient.get_existing_patient()
-            patient_id = existing_patient['id']
-        else:
-            patient_id = patient.create()
-        print(f'The patient ID is: {patient_id}.')
-
-        #Check size of VCF file. If larger than a given size (240 MiB for Alissa): split it. Return the paths to the chunks (or to the VCF of choice).
-        vcfs = chunk_vcf.prepare_and_split_vcf(original_vcf, '/home/xbregw/Alissa_upload/VCFs/chunks', 240_000_000)
-        
-        #Loop over the items in vcfs.
+        patient_id = create_patient(token, accession, sex, alissa_folder)
+        vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size)
         for path in vcfs:
-            vcf = cggVCF(token, path)
-            #Check whether a data file exists, if not: upload it. In both cases: return internal data file id.
-            data_file = vcf.get_data_file_by_name()
-            if len(data_file) > 0:
-                print('A VCF file with the same name already exists. Not attempting to upload it again.')
-                data_file_id = data_file[0]['id']
-            else: 
-                 data_file_id = vcf.post_vcf_to_alissa()
-            print(f'The data file ID is: {data_file_id}.')
-
-            #Check whether there are already lab results for that patient for all data files. If not, create lab results.
-            labresult = cggLabResult(token, patient_id, data_file_id, name_in_vcf)
-            prior_labresult = labresult.get_lab_result()
-            if len(prior_labresult) > 0:
-                exist = []
-                for result in prior_labresult:
-                    exist.append(result['dataFileId'])
-                if data_file_id in exist:
-                    print(f'There is a lab result for {data_file_id} already, skipping creating new lab result.') #TODO it would be great to print the corresponding lab result ID.
-                else:
-                    labresult_id = labresult.link_vcf_to_patient()
-                    print(f'The lab result ID is: {labresult_id}.')
- 
-            else:
-                labresult_id = labresult.link_vcf_to_patient()
-                print(f'The lab result ID is: {labresult_id}.')
-
+            datafile_id = create_datafile(token, path)
+            create_lab_result(token, patient_id, datafile_id, name_in_vcf)
+	
     else:
         # TODO Add a raise for custom Exception or built-in
         raise Exception('No token was generated. Investigate!')
