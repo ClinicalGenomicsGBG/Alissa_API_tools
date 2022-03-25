@@ -167,7 +167,7 @@ def main():
         accession_number = "test-patient_220321_2" #SLIMS: Sctx.sample_name
         folder_name = "Default" #SLIMS: department_translate[Sctx.slims_info['department']], default: "Default"
         patient_sex = "MALE" #SLIMS: Sctx.slims_info['gender'], default: "UNKNOWN"
-        path = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
+        original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz' #SLIMS: Sctx.snv_cnv_vcf_path
         name_in_vcf = "NA24143" #That is the sample ID in the VCF header row. In WOPR, it should be the same as Sctx.sample_name
 
         #Check whether a patient exists, if not: create it. In both cases: return internal patient id.
@@ -181,7 +181,7 @@ def main():
         print(f'The patient ID is: {patient_id}.')
 
         #Check size of VCF file. If larger than a given size (240 MiB for Alissa): split it. Return the paths to the chunks (or to the VCF of choice).
-        vcfs = chunk_vcf.prepare_and_split_vcf(path, '/home/xbregw/Alissa_upload/VCFs/chunks', 240_000_000)
+        vcfs = chunk_vcf.prepare_and_split_vcf(original_vcf, '/home/xbregw/Alissa_upload/VCFs/chunks', 240_000_000)
         
         #Loop over the items in vcfs.
         for path in vcfs:
