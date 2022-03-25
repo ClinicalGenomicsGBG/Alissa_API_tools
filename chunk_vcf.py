@@ -1,15 +1,11 @@
-#Usage: python3 chunk_vcf.py
-# The arguments are hardcoded (path_to_original_vcf, output_folder and max_size).
+#Usage: module load anaconda2; source activate wopr_alissa; python chunk_vcf.py
 # TODO Use e.g. /tmp on working node as the output folder
 
 import sys
 import os
 import subprocess
 import lists_of_contigs
-
-path_to_original_vcf = '/home/xbregw/Alissa_upload/VCFs/NA24143_191108_AHVWHGDSXX_SNV_CNV_germline.vcf.gz'
-output_folder = '/home/xbregw/Alissa_upload/VCFs/chunks'
-max_size = 240_000_000
+import click
 
 def bgzip(vcf, outfolder):
     """Bgzip VCF file."""
@@ -69,7 +65,14 @@ def prepare_chunk(vcf, outfolder, size):
        
     return splitted
         
-def prepare_and_split_vcf(vcf, outfolder, size):
+@click.command()
+@click.option('-v', '--vcf_path', required=True,
+              help='Path to input VCF file')
+@click.option('-o', '--output_folder', default='/tmp',
+              help='Path to output folder')
+@click.option('-s', '--size', required=True,
+              help='Maximal size (in bp). If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
+def prepare_and_split_vcf(vcf_path, output_folder, size):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
     #Check input format.
     if not (vcf.endswith('vcf.gz') or vcf.endswith('vcf')):
@@ -95,9 +98,8 @@ def prepare_and_split_vcf(vcf, outfolder, size):
             
         return new_vcfs
 
-    
 def main():
-    chunks = prepare_and_split_vcf(path_to_original_vcf, output_folder, max_size)
+    chunks = prepare_and_split_vcf(vcf_path, output_folder, size)
     return chunks
     
 if __name__ == '__main__':
