@@ -186,15 +186,19 @@ def create_lab_result(token, patient_id, datafile_id, name_in_vcf):
     labresult = cggLabResult(token, patient_id, datafile_id, name_in_vcf)
     prior_labresult = labresult.get_lab_result()
     if len(prior_labresult) > 0:
-        exist = []
+        exist_labresult = []
+        exist_datafile = []
         for result in prior_labresult:
-            exist.append(result['dataFileId'])
-        if datafile_id in exist:
-            print(f'There is a lab result for {datafile_id} already, skipping creating new lab result.') #TODO it would be great to print the corresponding lab result ID.
-    else:
-        labresult_id = labresult.link_vcf_to_patient()
-        print(f'The lab result ID is: {labresult_id}.')
-    return #What should the function return? Set it up so it returns the lab result ID (will be a bit tricky if it existed already).
+            exist_labresult.append(result['id'])
+            exist_datafile.append(result['dataFileId'])
+        if datafile_id in exist_datafile:
+            i = exist_datafile.index(datafile_id)
+            labresult_id = exist_labresult[i]
+            print(f'The lab result for patient {patient_id} and data file {datafile_id} already exists: {labresult_id}. Skipping creating a new one.')
+        else:
+            labresult_id = labresult.link_vcf_to_patient()
+            print(f'The lab result ID for patient {patient_id} and data file {datafile_id} is: {labresult_id}.')
+    return labresult_id
 
 @click.command()
 @click.option('-a', '--accession', required=True,
