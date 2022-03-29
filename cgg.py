@@ -196,6 +196,9 @@ def create_lab_result(token, patient_id, datafile_id, name_in_vcf):
         else:
             labresult_id = labresult.link_vcf_to_patient()
             print(f'The lab result ID for patient {patient_id} and data file {datafile_id} is: {labresult_id}.')
+    else:
+        labresult_id = labresult.link_vcf_to_patient()
+        print(f'The lab result ID for patient {patient_id} and data file {datafile_id} is: {labresult_id}.')
     return labresult_id
 
 @click.command()
