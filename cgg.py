@@ -203,19 +203,20 @@ def create_lab_result(token, patient_id, datafile_id, name_in_vcf):
 
 @click.command()
 @click.option('-a', '--accession', required=True,
-             help='Patient accession number') #SLIMS: Sctx.sample_name
+             help='Patient accession number')
 @click.option('-s', '--sex', default='UNKNOWN', type=click.Choice(['FEMALE', 'MALE', 'UNKNOWN']),
-             help='Sex of the sample') #SLIMS: Sctx.slims_info['gender']
+             help='Sex of the sample')
 @click.option('-f', '--alissa_folder', default='Default',
-             help='Folder in Alissa, for example "Klinisk Kemi" or "Klinisk Genetik"') #Should it also be a list with the different options? In WOPR tertiary.py: department_translate[Sctx.slims_info['department']]
+             type=click.Choice(['BCF demo', 'CRC pipeline validation', 'CRE2 Reference set files', 'Default', 'ExomeValidation', 'Klinisk Genetik', 'Klinisk Genetik - Forskning', 'Klinisk kemi', 'Validation WGS']),
+             help='Patient folder in Alissa, for example "Klinisk kemi" or "Klinisk Genetik"')
 @click.option('-v', '--vcf_path', required=True, type=click.Path(exists=True),
-              help='Path to input VCF file') #SLIMS: Sctx.snv_cnv_vcf_path
+              help='Path to input VCF file')
 @click.option('-o', '--output_folder', default='/tmp',
               help='Path to a folder where the VCF will be written if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that folder')
 @click.option('-s', '--size', required=True, type=int,
               help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
 @click.option('-n', '--name_in_vcf', required=True,
-             help='Sample ID in the VCF header row') #in WOPR it should be the same as Sctx.sample.name
+             help='Sample ID in the VCF header row')
 def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf):
     oauth2_client = OAuth2Client()
     token = oauth2_client.fetch_token()
