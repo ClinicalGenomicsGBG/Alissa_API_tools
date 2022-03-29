@@ -6,8 +6,6 @@ The code to interact with the API is partially based on code that we received fr
 
 The two main programs, `alissa_API_tools.py` and `chunk_vcf.py` can be used as standalone scripts. They will also be integrated in WOPR. It is possible to use the classes and functions in `alissa_API_tools.py` to do only some of the actions, e.g. creation of a patient.
 
-Caution! The current active feature branch is "refactor_chunk_vcf".
-
 ## Requirements
 
 The scripts in this repository should run in the same environment like WOPR. I made a clone of the `wopr` environment for developing and testing purposes. To that environment we added environment variables for Alissa (username, password and url) by modifying the file `/apps/bio/software/anaconda2/envs/wopr_alissa/etc/conda/activate.d/env_vars.sh`. The file `/apps/bio/software/anaconda2/envs/wopr_alissa/etc/conda/deactivate.d/env_vars.sh` was also modified. Currently the interaction is with the Alissa test instance.
