@@ -205,12 +205,12 @@ def create_lab_result(token, patient_id, datafile_id, name_in_vcf):
              help='Sex of the sample') #SLIMS: Sctx.slims_info['gender']
 @click.option('-f', '--alissa_folder', default='Default',
              help='Folder in Alissa, for example "Klinisk Kemi" or "Klinisk Genetik"') #Should it also be a list with the different options? In WOPR tertiary.py: department_translate[Sctx.slims_info['department']]
-@click.option('-v', '--vcf_path', type=click.Path(exists=True),
+@click.option('-v', '--vcf_path', required=True, type=click.Path(exists=True),
               help='Path to input VCF file') #SLIMS: Sctx.snv_cnv_vcf_path
 @click.option('-o', '--output_folder', default='/tmp',
-              help='Path to output folder')
+              help='Path to a folder containing the VCF files created if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that location.')
 @click.option('-s', '--size', required=True, type=int,
-              help='Maximal size (in bp). If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
+              help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
 @click.option('-n', '--name_in_vcf', required=True,
              help='Sample ID in the VCF header row') #in WOPR it should be the same as Sctx.sample.name
 def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf):
