@@ -45,24 +45,23 @@ def prepare_chunk(vcf, outfolder, size):
     Return an exception if one of the four chunks is larger than the given size. 
     """
     
-    splitted = [vcf]
-    toobig = any([os.path.getsize(newvcf) > size for newvcf in splitted ]) #Initialize boolean that returns True if at least one of the files is too large.
-    i = 0 #Initialize count variable for while loop
+    if os.path.getsize(vcf) < size:
+        print('The VCF did not need to be split.')
+        return [vcf]
 
-    while i < len(lists_of_contigs.contig_lists) and toobig :
-        splitted = []
-        for partition in lists_of_contigs.contig_lists[i] :
-            chunk = split_vcf(vcf, outfolder, partition[0], partition[1])
-            splitted.append(chunk)        
-        i = i + 1
-        toobig = any([os.path.getsize(newvcf) > size for newvcf in splitted ])
-        j = i + 1
-        print(f'The VCF has been split into {j} chunks.')
+    else:
+        for chunk_attempt in lists_of_contigs.contig_lists:
+            chunks = []
+            for chunk in chunk_attempt:
+                chunk_path = split_vcf(vcf, outfolder, chunk[0], chunk[1])
+                chunks.append(chunk_path)
 
-    if toobig:
-        raise Exception(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please investigate.')
-       
-    return splitted
+            if not any([os.path.getsize(chunk) > size for chunk in chunks]):
+                l = len(chunks)
+                print(f'The VCF has been split into {l} chunks.')
+                return chunks
+        else:
+            raise Exception(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please investigate.')
         
 def prepare_and_split_vcf(vcf, outfolder, size):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
@@ -94,9 +93,9 @@ def prepare_and_split_vcf(vcf, outfolder, size):
 @click.option('-v', '--vcf_path', required=True,
               help='Path to input VCF file')
 @click.option('-o', '--output_folder', default='/tmp',
-              help='Path to output folder')
+              help='Path to a folder where VCF will be written if the input VCF is larger than the size argument')
 @click.option('-s', '--size', required=True, type=int,
-              help='Maximal size (in bp). If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
+              help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
 def main(vcf_path, output_folder, size):
     chunks = prepare_and_split_vcf(vcf_path, output_folder, size)
     return chunks
