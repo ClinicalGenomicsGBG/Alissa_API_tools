@@ -219,21 +219,10 @@ def create_lab_result(token, bench_url, patient_id, datafile_id, name_in_vcf):
               help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
 @click.option('-n', '--name_in_vcf', required=True,
              help='Sample ID in the VCF header row')
-@click.option('--production-instance', is_flag=True,
-             help='Use Alissa production instance. If the flag is not set, the test instance is used.') #TODO invert the logic once testing is finished.
-def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance):
-    if production_instance:
-        token_url = passwords.alissa_prod.token_url
-        bench_url = passwords.alissa_prod.bench_url
-        username = passwords.alissa_prod.username
-        password = passwords.alissa_prod.password
-    else:
-        token_url = passwords.alissa_test.token_url
-        bench_url = passwords.alissa_test.bench_url
-        username = passwords.alissa_test.username
-        password = passwords.alissa_test.password
-    
-    oauth2_client = OAuth2Client(username, password, token_url)
+@click.option('-i', '--alissa-instance', default='test', type=click.Choice(['production', 'test']),
+             help='Which Alissa instance to use: production or test.') #TODO another option is to use a flag and e.g. use the test instance if the flag says "True". At the moment it is better to have the test instance as default.
+def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, alissa_instance):
+    oauth2_client = OAuth2Client()
     token = oauth2_client.fetch_token()
 
     if token:
