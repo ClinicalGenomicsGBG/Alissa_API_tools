@@ -1,4 +1,5 @@
 import logging
+import passwords
 from .classes import cggPatient, cggVCF, cggLabResult
 
 def create_patient(token, bench_url, accession, sex, alissa_folder):
@@ -65,3 +66,18 @@ def setup_logger(name, log_path=None):
         logger.addHandler(file_handle)
 
     return logger
+
+def get_alissa_credentials(production_instance):
+    if production_instance == 'production':
+        token_url = passwords.alissa_prod.token_url
+        bench_url = passwords.alissa_prod.bench_url
+        username = passwords.alissa_prod.username
+        password = passwords.alissa_prod.password
+
+    else:
+        token_url = passwords.alissa_test.token_url
+        bench_url = passwords.alissa_test.bench_url
+        username = passwords.alissa_test.username
+        password = passwords.alissa_test.password
+
+    return token_url, bench_url, username, password
