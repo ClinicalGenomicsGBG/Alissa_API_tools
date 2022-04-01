@@ -35,26 +35,41 @@ def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_v
     logger = setup_logger('alissa_upload')
 
     ## Get the credentials set up
-    logger.info(f"Starting upload of {os.path.basename(vcf_path)} to Alissa {production_instance} instance.")
+    logger.info(f'Starting upload of {os.path.basename(vcf_path)} to Alissa {production_instance} instance.')
     token_url, bench_url, username, password = get_alissa_credentials(production_instance)
 
     try:
         oauth2_client = OAuth2Client(username, password, token_url)
         token = oauth2_client.fetch_token()
     except:
-        logger.error(f"Was not able to generate a api token.")
+        logger.error(f'Was not able to generate an API token.')
         raise PermissionError
 
-
+    ## Create the patient. If the patient already exists in Alissa, fetch the internal ID.
+    logger.infof(f'Starting creation of patient in Alissa.')	
     patient_id, patient_exists = create_patient(token, bench_url, accession, sex, alissa_folder)
     if patient_exists == True:
-        logger.info(f"A patient already exists with patient ID: {patient_id}")
+        logger.info(f'A patient already exists with patient ID: {patient_id}')
     else:
-        logger.info(f"A patient has been created with patient ID: {patient_id}")
+        logger.info(f'A patient has been created with patient ID: {patient_id}')
 
+    ## Prepare the VCF for upload. If the VCF is larger than the limit for Alissa API: split it.
+    # TODO the logging should be done in chunk_vcf.py
+    logger.info(f'Prepare the VCF for upload to Alissa.')
     vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size)
+    
     for path in vcfs:
-        datafile_id = create_datafile(token, bench_url, path)
+        ## Upload the VCF to Alissa. If a datafile with the same name already exists in Alissa, fetch the internal ID.
+        logger.info(f'Starting upload of VCF to Alissa.')
+        datafile_id, datafile_exists = create_datafile(token, bench_url, path)
+        if datafile_exists == True:
+            logger.info(f'A datafile already exists with datafile ID: {datafile_id}. If you want to replace with a datafile with the same name, you need to delete it from Alissa.')
+        else:
+            logger.info(f'A datafile has been created with datafile ID: {datafile_id}')
+
+        ## Create the lab result in Alissa.
+        # TODO modify create_lab_result so that it mimics create_patient and returns True if the lab result already exists.
+        logger.info(f'Starting creation of lab result.')
         create_lab_result(token, bench_url,  patient_id, datafile_id, name_in_vcf)
 
    

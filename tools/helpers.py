@@ -3,7 +3,7 @@ import passwords
 from .classes import cggPatient, cggVCF, cggLabResult
 
 def create_patient(token, bench_url, accession, sex, alissa_folder):
-    """Create a patient in Alissa (unless the patient already exists, in which case a message is returned). Return the internal patient id."""
+    """Create a patient in Alissa. Return the internal patient ID and a boolean saying whether the patient already existed in Alissa."""
     patient = cggPatient(token, bench_url, accession, alissa_folder, sex)
     if not patient.exists():
         patient_id = patient.create()
@@ -16,16 +16,17 @@ def create_patient(token, bench_url, accession, sex, alissa_folder):
     return patient_id, patient_exist
 
 def create_datafile(token, bench_url, path):
-    """Create a datafile in Alissa (unless the data file already exists). Return the internal datafile id."""
+    """Create a datafile in Alissa (i.e. upload a VCF file). Return the internal datafile id and a boolean saying whether the datafile already existed in Alissa."""
     vcf = cggVCF(token, bench_url, path)
     data_file = vcf.get_data_file_by_name()
     if len(data_file) == 0:
         data_file_id = vcf.post_vcf_to_alissa()
+        data_file_exist = False
     else:
-        print('A VCF file with the same name already exists. Not attempting to upload it again.')
         data_file_id = data_file[0]['id']
-    print(f'The data file ID is: {data_file_id}.')
-    return(data_file_id)
+        data_file_exist = True
+
+    return data_file_id, data_file_exist
 
 def create_lab_result(token, bench_url, patient_id, datafile_id, name_in_vcf):
     """Create a lab result in Alissa (unless the lab result already exists)."""
