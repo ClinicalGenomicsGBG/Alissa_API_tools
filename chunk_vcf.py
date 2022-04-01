@@ -17,6 +17,7 @@ def bgzip(vcf, outfolder):
         bgzipped_exist = True
     else:
         subprocess.run(command_bgzip)
+        bgzipped_exist = False
 
     return bgzipped_vcf, bgzipped_exist
 
@@ -37,6 +38,7 @@ def split_vcf(vcf, outfolder, suffix, regions):
     output = os.path.join(outfolder, basename + suffix + '.vcf.gz')
     command_split = ["bcftools", "view", "--output-type", "z", "--output", output, "-r", regions, vcf]
     if os.path.exists(output):
+        #TODO could the message below be included in logger as well?
         print(f'File {output} already exists, moving on.')
     else:
         split = subprocess.run(command_split)
