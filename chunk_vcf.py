@@ -52,7 +52,6 @@ def prepare_chunk(vcf, outfolder, size):
     """
     
     if os.path.getsize(vcf) < size:
-#        print('The VCF did not need to be split.')
         split_status = False
         n_chunks = 0
         return [vcf], split_status, n_chunks
@@ -67,11 +66,11 @@ def prepare_chunk(vcf, outfolder, size):
 
             if not any([os.path.getsize(chunk) > size for chunk in chunks]):
                 n_chunks = len(chunks)
-#                print(f'The VCF has been split into {l} chunks.')
                 return chunks, split_status, n_chunks
         else:
             #TODO how should I deal with that for the logger? I do not fully understand the "else" logic here.
-            raise Exception(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please investigate.')
+            n_chunks = 0
+            return chunks, split_status, n_chunks
         
 def prepare_and_split_vcf(vcf, outfolder, size):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
@@ -118,7 +117,11 @@ def prepare_and_split_vcf(vcf, outfolder, size):
         if status == False:
             logger.info(f'The input file is smaller than {size} and does not need to be split.')
         else:
-            logger.info(f'The input file has been split in {n_chunks} chunks.')
+            if n_chunks == 0:
+                logger.error(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please intervene manually.')
+                raise Exception
+            else:
+                logger.info(f'The input file has been split in {n_chunks} chunks.')
     
         return new_vcfs
 
