@@ -16,7 +16,7 @@ def create_patient(token, bench_url, accession, sex, alissa_folder):
     return patient_id, patient_exist
 
 def create_datafile(token, bench_url, path):
-    """Create a datafile in Alissa (i.e. upload a VCF file). Return the internal datafile id and a boolean saying whether the datafile already existed in Alissa."""
+    """Create a datafile in Alissa (i.e. upload a VCF file). Return the internal datafile ID and a boolean saying whether the datafile already existed in Alissa."""
     vcf = cggVCF(token, bench_url, path)
     data_file = vcf.get_data_file_by_name()
     if len(data_file) == 0:
@@ -29,7 +29,7 @@ def create_datafile(token, bench_url, path):
     return data_file_id, data_file_exist
 
 def create_lab_result(token, bench_url, patient_id, datafile_id, name_in_vcf):
-    """Create a lab result in Alissa (unless the lab result already exists)."""
+    """Create a lab result in Alissa. Return the internal lab result ID and a boolean saying whether the lab result already existed in Alissa."""
     labresult = cggLabResult(token, bench_url, patient_id, datafile_id, name_in_vcf)
     prior_labresult = labresult.get_lab_result()
     if len(prior_labresult) > 0:
@@ -41,14 +41,15 @@ def create_lab_result(token, bench_url, patient_id, datafile_id, name_in_vcf):
         if datafile_id in exist_datafile:
             i = exist_datafile.index(datafile_id)
             labresult_id = exist_labresult[i]
-            print(f'The lab result for patient {patient_id} and data file {datafile_id} already exists: {labresult_id}. Skipping creating a new one.')
+            labresult_exist = True
         else:
             labresult_id = labresult.link_vcf_to_patient()
-            print(f'The lab result ID for patient {patient_id} and data file {datafile_id} is: {labresult_id}.')
+            labresult_exist = False
     else:
         labresult_id = labresult.link_vcf_to_patient()
-        print(f'The lab result ID for patient {patient_id} and data file {datafile_id} is: {labresult_id}.')
-    return labresult_id
+        labresult_exist = False
+
+    return labresult_id, labresult_exist
 
 def setup_logger(name, log_path=None):
     """Initialise a log file using the logging package"""

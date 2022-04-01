@@ -46,7 +46,7 @@ def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_v
         raise PermissionError
 
     ## Create the patient. If the patient already exists in Alissa, fetch the internal ID.
-    logger.infof(f'Starting creation of patient in Alissa.')	
+    logger.info(f'Starting creation of patient {accession} in Alissa.')	
     patient_id, patient_exists = create_patient(token, bench_url, accession, sex, alissa_folder)
     if patient_exists == True:
         logger.info(f'A patient already exists with patient ID: {patient_id}')
@@ -68,9 +68,12 @@ def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_v
             logger.info(f'A datafile has been created with datafile ID: {datafile_id}')
 
         ## Create the lab result in Alissa.
-        # TODO modify create_lab_result so that it mimics create_patient and returns True if the lab result already exists.
         logger.info(f'Starting creation of lab result.')
-        create_lab_result(token, bench_url,  patient_id, datafile_id, name_in_vcf)
+        labresult_id, labresult_exists = create_lab_result(token, bench_url,  patient_id, datafile_id, name_in_vcf)
+        if labresult_exists == True:
+            logger.info(f'A lab result already exists with lab result ID: {labresult_id}')
+        else:
+            logger.info(f'A lab result has been created with lab result ID: {labresult_id}')
 
    
 if __name__ == '__main__':
