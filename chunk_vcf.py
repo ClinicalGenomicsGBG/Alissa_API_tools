@@ -77,10 +77,10 @@ def prepare_chunk(vcf, outfolder, size):
             n_chunks = 0
             return chunks, split_status, index_status, n_chunks
         
-def prepare_and_split_vcf(vcf, outfolder, size):
+def prepare_and_split_vcf(vcf, outfolder, size, logpath=None):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
     ## Set up the logfile and start logging.
-    logger = setup_logger('prepare_and_split_vcf')
+    logger = setup_logger('prepare_and_split_vcf', logpath)
 
     logger.info(f'Starting preparation of file {vcf}')
 
@@ -135,8 +135,9 @@ def prepare_and_split_vcf(vcf, outfolder, size):
               help='Path to a folder where VCF will be written if the input VCF is larger than the size argument')
 @click.option('-s', '--size', required=True, type=int,
               help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
-def main(vcf_path, output_folder, size):
-    chunks = prepare_and_split_vcf(vcf_path, output_folder, size)
+@click.option('--logpath', help='Path to log file to which logging is performed.')
+def main(vcf_path, output_folder, size, logpath):
+    chunks = prepare_and_split_vcf(vcf_path, output_folder, size, logpath)
     return chunks
     
 if __name__ == '__main__':

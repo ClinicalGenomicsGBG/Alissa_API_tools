@@ -29,10 +29,11 @@ from tools.helpers import create_patient, create_datafile, create_lab_result, \
 @click.option('-n', '--name_in_vcf', required=True,
              help='Sample ID in the VCF header row')
 @click.option('-i', '--production-instance', type=click.Choice(['production', 'test']) , default="test",
-             help='What Alissa instance should be used. Production or Test.') #TODO invert the logic once testing is finished.
-def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance):
+             help='What Alissa instance should be used. Production or test.') #TODO invert the logic once testing is finished.
+@click.option('--logpath', help='Path to log file to which logging is performed.')
+def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
     ## Set up the logfile and start logging
-    logger = setup_logger('alissa_upload')
+    logger = setup_logger('alissa_upload', logpath)
 
     ## Get the credentials set up
     logger.info(f'Starting upload of {os.path.basename(vcf_path)} to Alissa {production_instance} instance.')
@@ -54,9 +55,8 @@ def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_v
         logger.info(f'A patient has been created with patient ID: {patient_id}')
 
     ## Prepare the VCF for upload. If the VCF is larger than the limit for Alissa API: split it.
-    # TODO the logging should be done in chunk_vcf.py
-    logger.info(f'Prepare the VCF for upload to Alissa.')
-    vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size)
+    logger.info(f'Prepare the VCF(s) for upload to Alissa.')
+    vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size, logpath)
     
     for path in vcfs:
         ## Upload the VCF to Alissa. If a datafile with the same name already exists in Alissa, fetch the internal ID.
