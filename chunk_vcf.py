@@ -75,7 +75,6 @@ def prepare_chunk(vcf, outfolder, size):
 def prepare_and_split_vcf(vcf, outfolder, size):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
     ## Set up the logfile and start logging.
-    # TODO is it weird that this is here and not in main() ? The point of having all the steps here was that one could import the function prepare_and_split_vcf (nicer than having to import main).
     logger = setup_logger('prepare_and_split_vcf')
 
     logger.info(f'Starting preparation of file {vcf}')
@@ -104,7 +103,7 @@ def prepare_and_split_vcf(vcf, outfolder, size):
             unindexed_vcf = vcf
  
         ## Index the VCF.
-        logger.info('Starting indexing of the input file.')
+        logger.info('Preparing indexing of the input file.')
         index_exists = index(unindexed_vcf)
         if index_exists == True:
             logger.info(f'There is already an index for {unindexed_vcf}, skipping indexing.')
