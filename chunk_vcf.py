@@ -36,13 +36,11 @@ def split_vcf(vcf, outfolder, suffix, regions):
     """Return a VCF file that contains a subset of regions from the input VCF. Arguments outfolder and suffix are used to name the output file."""
     basename = os.path.basename(vcf).replace('.vcf.gz', '')
     output = os.path.join(outfolder, basename + suffix + '.vcf.gz')
-    command_split = ["bcftools", "view", "--output-type", "z", "--output", output, "-r", regions, vcf]
-    if os.path.exists(output):
-        #TODO could the message below be included in logger as well?
-        print(f'File {output} already exists, moving on.')
-    else:
+    if not os.path.exists(output):
+        command_split = ["bcftools", "view", "--output-type", "z", "--output", output, "-r", regions, vcf]
         split = subprocess.run(command_split)
         split.check_returncode()
+
     return output
 
 def prepare_chunk(vcf, outfolder, size):
