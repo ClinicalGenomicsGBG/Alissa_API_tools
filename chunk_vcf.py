@@ -53,11 +53,16 @@ def prepare_chunk(vcf, outfolder, size):
     
     if os.path.getsize(vcf) < size:
         split_status = False
+        index_status = False
         n_chunks = 0
-        return [vcf], split_status, n_chunks
+        return [vcf], split_status, index_status, n_chunks
 
     else:
         split_status = True
+        
+        ## Index the VCF.
+        index_status = index(vcf)
+
         for chunk_attempt in lists_of_contigs.contig_lists:
             chunks = []
             for chunk in chunk_attempt:
@@ -66,11 +71,11 @@ def prepare_chunk(vcf, outfolder, size):
 
             if not any([os.path.getsize(chunk) > size for chunk in chunks]):
                 n_chunks = len(chunks)
-                return chunks, split_status, n_chunks
+                return chunks, split_status, index_status, n_chunks
+
         else:
-            #TODO how should I deal with that for the logger? I do not fully understand the "else" logic here.
             n_chunks = 0
-            return chunks, split_status, n_chunks
+            return chunks, split_status, index_status, n_chunks
         
 def prepare_and_split_vcf(vcf, outfolder, size):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
@@ -101,21 +106,20 @@ def prepare_and_split_vcf(vcf, outfolder, size):
 
         else:
             unindexed_vcf = vcf
- 
-        ## Index the VCF.
-        logger.info('Preparing indexing of the input file.')
-        index_exists = index(unindexed_vcf)
-        if index_exists == True:
-            logger.info(f'There is already an index for {unindexed_vcf}, skipping indexing.')
-        else:
-            logger.info(f'The file {unindexed_vcf} has been indexed.')
     
         ## Split the VCF.
-        logger.info(f'Checking the size of the file and starting chunking if relevant.')
-        new_vcfs, status, n_chunks = prepare_chunk(unindexed_vcf, outfolder, size)
-        if status == False:
+        logger.info(f'Checking the size of the file. Indexing and chunking if relevant.')
+        new_vcfs, status_split, status_index, n_chunks = prepare_chunk(unindexed_vcf, outfolder, size)
+
+        if status_split == False:
             logger.info(f'The input file is smaller than {size} and does not need to be split.')
+
         else:
+            if status_index == True:
+                logger.info(f'There was already an index for {unindexed_vcf}, indexing was skipped.')
+            elif status_index == False:
+                logger.info(f'The file {unindexed_vcf} has been indexed.')
+            
             if n_chunks == 0:
                 logger.error(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please intervene manually.')
                 raise Exception
