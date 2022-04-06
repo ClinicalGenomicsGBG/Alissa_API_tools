@@ -22,7 +22,7 @@ from tools.helpers import create_patient, create_datafile, create_lab_result, \
              help='Patient folder in Alissa, for example "Klinisk kemi" or "Klinisk Genetik"')
 @click.option('-v', '--vcf_path', required=True, type=click.Path(exists=True),
               help='Path to input VCF file')
-@click.option('-o', '--output_folder', default='/tmp',
+@click.option('-o', '--output_folder', default='/tmp', type=click.Path(exists=True),
               help='Path to a folder where the VCF will be written if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that folder')
 @click.option('-s', '--size', required=True, type=int,
               help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')

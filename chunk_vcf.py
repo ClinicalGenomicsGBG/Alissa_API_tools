@@ -95,43 +95,43 @@ def prepare_and_split_vcf(vcf, outfolder, size, logpath=None):
         logger.error(f'Please check this file: {vcf}, the size is 0.')
         raise Exception
 
+    ## Check whether input needs to be bgzipped.
+    if vcf.endswith('vcf'):
+        logger.info("The VCF will be bgzipped.")
+        unindexed_vcf, bgzipped_exists = bgzip(vcf, outfolder)
+        if bgzipped_exists == True:
+            logger.info(f'A bgzipped version of the file exists already, using that instead.')
+        else:
+            logger.info('The file has been bgzipped.')
+
     else:
-        if vcf.endswith('vcf'):
-            logger.info("The VCF will be bgzipped.")
-            unindexed_vcf, bgzipped_exists = bgzip(vcf, outfolder)
-            if bgzipped_exists == True:
-                logger.info(f'A bgzipped version of the file exists already, using that instead.')
-            else:
-                logger.info('The file has been bgzipped.')
-
-        else:
-            unindexed_vcf = vcf
+        unindexed_vcf = vcf
     
-        ## Split the VCF.
-        logger.info(f'Checking the size of the file. Indexing and chunking if relevant.')
-        new_vcfs, status_split, status_index, n_chunks = prepare_chunk(unindexed_vcf, outfolder, size)
+    ## Split the VCF.
+    logger.info(f'Checking the size of the file. Indexing and chunking if relevant.')
+    new_vcfs, status_split, status_index, n_chunks = prepare_chunk(unindexed_vcf, outfolder, size)
 
-        if status_split == False:
-            logger.info(f'The input file is smaller than {size} and does not need to be split.')
+    if status_split == False:
+        logger.info(f'The input file is smaller than {size} bytes and does not need to be split.')
 
-        else:
-            if status_index == True:
-                logger.info(f'There was already an index for {unindexed_vcf}, indexing was skipped.')
-            elif status_index == False:
-                logger.info(f'The file {unindexed_vcf} has been indexed.')
+    else:
+        if status_index == True:
+            logger.info(f'There was already an index for {unindexed_vcf}, indexing was skipped.')
+        elif status_index == False:
+            logger.info(f'The file {unindexed_vcf} has been indexed.')
             
-            if n_chunks == 0:
-                logger.error(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please intervene manually.')
-                raise Exception
-            else:
-                logger.info(f'The input file has been split in {n_chunks} chunks.')
-    
-        return new_vcfs
+        if n_chunks == 0:
+            logger.error(f'We ran out of chunks and one of the files is still larger than {size} bytes. Please intervene manually.')
+            raise Exception
+        
+        logger.info(f'The input file has been split in {n_chunks} chunks.')
+       
+    return new_vcfs
 
 @click.command()
 @click.option('-v', '--vcf_path', required=True,
               help='Path to input VCF file')
-@click.option('-o', '--output_folder', default='/tmp',
+@click.option('-o', '--output_folder', default='/tmp', type=click.Path(exists=True),
               help='Path to a folder where VCF will be written if the input VCF is larger than the size argument')
 @click.option('-s', '--size', required=True, type=int,
               help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
