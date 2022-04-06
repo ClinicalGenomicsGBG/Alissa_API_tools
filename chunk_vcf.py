@@ -1,5 +1,3 @@
-#Usage (to print the help message): module load anaconda2; source activate wopr_alissa; python chunk_vcf.py --help
-
 import sys
 import os
 import subprocess
@@ -46,11 +44,12 @@ def split_vcf(vcf, outfolder, suffix, regions):
 def prepare_chunk(vcf, outfolder, size):
     """Return a list of paths to compressed VCF files smaller than a given size.
 
-    If the input is smaller than the given size, there is a single vcf.
+    If the input is smaller than the given size, there is a single VCF.
     If the input is larger than the given size, the function will loop over a list of lists of contigs until either all files are smaller than the given size, or it runs out of lists of contigs. At the moment there are three lists available, so it will return two, three or four chunks.
     Return an exception if one of the four chunks is larger than the given size. 
     """
     
+    ## Check size.
     if os.path.getsize(vcf) < size:
         split_status = False
         index_status = False
@@ -63,6 +62,7 @@ def prepare_chunk(vcf, outfolder, size):
         ## Index the VCF.
         index_status = index(vcf)
 
+        ## Chunk the VCF.
         for chunk_attempt in lists_of_contigs.contig_lists:
             chunks = []
             for chunk in chunk_attempt:
@@ -134,7 +134,7 @@ def prepare_and_split_vcf(vcf, outfolder, size, logpath=None):
 @click.option('-o', '--output_folder', default='/tmp', type=click.Path(exists=True),
               help='Path to a folder where VCF will be written if the input VCF is larger than the size argument')
 @click.option('-s', '--size', required=True, type=int,
-              help='Size in bp. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
+              help='Size in bytes. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
 @click.option('--logpath', help='Path to log file to which logging is performed.')
 def main(vcf_path, output_folder, size, logpath):
     chunks = prepare_and_split_vcf(vcf_path, output_folder, size, logpath)
