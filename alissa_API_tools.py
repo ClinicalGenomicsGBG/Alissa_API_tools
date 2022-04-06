@@ -6,26 +6,7 @@ from tools.classes import OAuth2Client
 from tools.helpers import create_patient, create_datafile, create_lab_result, \
     setup_logger, get_alissa_credentials
 
-@click.command()
-@click.option('-a', '--accession', required=True,
-             help='Patient accession number (name that will be used in Alissa).')
-@click.option('-v', '--vcf_path', required=True, type=click.Path(exists=True)
-              help='Path to input VCF file.')
-@click.option('-s', '--size', required=True, type=int,
-              help='Size in bytes. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
-@click.option('-n', '--name_in_vcf', required=True,
-             help='Sample ID in the VCF header row.')
-@click.option('-s', '--sex', default='UNKNOWN', type=click.Choice(['FEMALE', 'MALE', 'UNKNOWN']),
-             help='Sex of the sample. Default: "UNKNOWN"')
-@click.option('-f', '--alissa_folder', default='Default',
-             type=click.Choice(['BCF demo', 'CRC pipeline validation', 'CRE2 Reference set files', 'Default', 'ExomeValidation', 'Klinisk Genetik', 'Klinisk Genetik - Forskning', 'Klinisk kemi', 'Validation WGS']),
-             help='Patient folder in Alissa. Default: "Default".')
-@click.option('-o', '--output_folder', default='/tmp', type=click.Path(exists=True),
-              help='Path to a folder where the VCF will be written if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that folder. Default: "/tmp".')
-@click.option('-i', '--production-instance', type=click.Choice(['production', 'test']) , default="test",
-             help='What Alissa instance should be used. Default: "test".') #TODO invert the logic once testing is finished.
-@click.option('--logpath', help='Path to log file to which logging is performed.')
-def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
+def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
     ## Set up the logfile and start logging
     logger = setup_logger('alissa_upload', logpath)
 
@@ -69,6 +50,28 @@ def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_v
         else:
             logger.info(f'A lab result has been created with lab result ID: {labresult_id}')
 
+@click.command()
+@click.option('-a', '--accession', required=True,
+             help='Patient accession number (name that will be used in Alissa).')
+@click.option('-v', '--vcf_path', required=True, type=click.Path(exists=True),
+              help='Path to input VCF file.')
+@click.option('-s', '--size', required=True, type=int,
+              help='Size in bytes. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs.')
+@click.option('-n', '--name_in_vcf', required=True,
+             help='Sample ID in the VCF header row.')
+@click.option('-S', '--sex', default='UNKNOWN', type=click.Choice(['FEMALE', 'MALE', 'UNKNOWN']),
+             help='Sex of the sample. Default: "UNKNOWN"')
+@click.option('-f', '--alissa_folder', default='Default',
+             type=click.Choice(['BCF demo', 'CRC pipeline validation', 'CRE2 Reference set files', 'Default', 'ExomeValidation', 'Klinisk Genetik', 'Klinisk Genetik - Forskning', 'Klinisk kemi', 'Validation WGS']),
+             help='Patient folder in Alissa. Default: "Default".')
+@click.option('-o', '--output_folder', default='/tmp', type=click.Path(exists=True),
+              help='Path to a folder where the VCF will be written if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that folder. Default: "/tmp".')
+@click.option('-i', '--production-instance', type=click.Choice(['production', 'test']) , default="test",
+             help='What Alissa instance should be used. Default: "test".') #TODO invert the logic once testing is finished.
+@click.option('--logpath', help='Path to log file to which logging is performed.')
+def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
+     alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath)
+     return
    
 if __name__ == '__main__':
     main()
