@@ -1,5 +1,5 @@
 import logging
-from .. import passwords
+import .passwords
 from .classes import cggPatient, cggVCF, cggLabResult
 
 def create_patient(token, bench_url, accession, sex, alissa_folder):

@@ -1,10 +1,10 @@
 import sys
 import os
 import subprocess
-import lists_of_contigs
+import .lists_of_contigs
 import click
 
-from tools.helpers import setup_logger
+from .tools.helpers import setup_logger
 
 def bgzip(vcf, outfolder):
     """Bgzip VCF file."""

@@ -1,4 +1,4 @@
-from . import chunk_vcf
+import .chunk_vcf
 import click
 import os
 
