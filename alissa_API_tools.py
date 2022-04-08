@@ -1,9 +1,9 @@
-import chunk_vcf
+from . import chunk_vcf
 import click
 import os
 
-from tools.classes import OAuth2Client
-from tools.helpers import create_patient, create_datafile, create_lab_result, \
+from .tools.classes import OAuth2Client
+from .tools.helpers import create_patient, create_datafile, create_lab_result, \
     setup_logger, get_alissa_credentials
 
 def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
