@@ -1,4 +1,5 @@
 import logging
+
 import passwords
 from .classes import cggPatient, cggVCF, cggLabResult
 

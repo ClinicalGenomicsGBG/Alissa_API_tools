@@ -1,9 +1,9 @@
 import sys
 import os
 import subprocess
-import lists_of_contigs
 import click
 
+import lists_of_contigs
 from tools.helpers import setup_logger
 
 def bgzip(vcf, outfolder):
