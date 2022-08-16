@@ -6,7 +6,7 @@ from tools.classes import OAuth2Client
 from tools.helpers import create_patient, create_datafile, create_lab_result, \
     setup_logger, get_alissa_credentials
 
-def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
+def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, reference, logpath):
     ## Set up the logfile and start logging
     logger = setup_logger('alissa_upload', logpath)
 
@@ -31,7 +31,7 @@ def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, 
 
     ## Prepare the VCF for upload. If the VCF is larger than the limit for Alissa API: split it.
     logger.info(f'Prepare the VCF(s) for upload to Alissa.')
-    vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size, logpath)
+    vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size, logpath, reference)
     
     for path in vcfs:
         ## Upload the VCF to Alissa. If a datafile with the same name already exists in Alissa, fetch the internal ID.
@@ -68,9 +68,10 @@ def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, 
               help='Path to a folder where the VCF will be written if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that folder. Default: "/tmp".')
 @click.option('-i', '--production-instance', type=click.Choice(['production', 'test']) , default="test",
              help='What Alissa instance should be used. Default: "test".') #TODO invert the logic once testing is finished.
+@click.option('-ref', '--reference', help='Reference genome (hg19 or hg38). Default: hg19', default = 'hg19')
 @click.option('--logpath', help='Path to log file to which logging is performed.')
-def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath):
-     alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, logpath)
+def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, reference, logpath):
+     alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, reference, logpath)
      return
    
 if __name__ == '__main__':

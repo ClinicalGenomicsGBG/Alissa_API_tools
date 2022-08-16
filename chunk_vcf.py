@@ -3,7 +3,8 @@ import os
 import subprocess
 import click
 
-import lists_of_contigs
+import lists_of_contigs_hs37d5
+import lists_of_contigs_GRCh38
 from tools.helpers import setup_logger
 
 def bgzip(vcf, outfolder):
@@ -41,7 +42,7 @@ def split_vcf(vcf, outfolder, suffix, regions):
 
     return output
 
-def prepare_chunk(vcf, outfolder, size):
+def prepare_chunk(vcf, outfolder, size, reference):
     """Return a list of paths to compressed VCF files smaller than a given size.
 
     If the input is smaller than the given size, there is a single VCF.
@@ -49,6 +50,13 @@ def prepare_chunk(vcf, outfolder, size):
     Return an exception if one of the four chunks is larger than the given size. 
     """
     
+    # Use lists of contigs based on reference genome
+    if reference == 'hg19':
+        lists_of_contigs = lists_of_contigs_hs37d5
+    elif reference == 'hg38':
+        lists_of_contigs = lists_of_contigs_GRCh38
+
+
     ## Check size.
     if os.path.getsize(vcf) < size:
         split_status = False
@@ -77,7 +85,7 @@ def prepare_chunk(vcf, outfolder, size):
             n_chunks = 0
             return chunks, split_status, index_status, n_chunks
         
-def prepare_and_split_vcf(vcf, outfolder, size, logpath=None):
+def prepare_and_split_vcf(vcf, outfolder, size, reference, logpath=None):
     """Perform preliminary checks on input and return one to four VCF.GZ smaller than the given size."""
     ## Set up the logfile and start logging.
     logger = setup_logger('prepare_and_split_vcf', logpath)
@@ -109,7 +117,7 @@ def prepare_and_split_vcf(vcf, outfolder, size, logpath=None):
     
     ## Split the VCF.
     logger.info(f'Checking the size of the file. Indexing and chunking if relevant.')
-    new_vcfs, status_split, status_index, n_chunks = prepare_chunk(unindexed_vcf, outfolder, size)
+    new_vcfs, status_split, status_index, n_chunks = prepare_chunk(unindexed_vcf, outfolder, size, reference)
 
     if status_split == False:
         logger.info(f'The input file is smaller than {size} bytes and does not need to be split.')
@@ -135,9 +143,11 @@ def prepare_and_split_vcf(vcf, outfolder, size, logpath=None):
               help='Path to a folder where VCF will be written if the input VCF is larger than the size argument')
 @click.option('-s', '--size', required=True, type=int,
               help='Size in bytes. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
+@click.option('-ref', '--reference', required=True,
+              help='Reference genome (hg19 or hg38)')
 @click.option('--logpath', help='Path to log file to which logging is performed.')
-def main(vcf_path, output_folder, size, logpath):
-    chunks = prepare_and_split_vcf(vcf_path, output_folder, size, logpath)
+def main(vcf_path, output_folder, size, logpath, reference):
+    chunks = prepare_and_split_vcf(vcf_path, output_folder, size, reference, logpath)
     return chunks
     
 if __name__ == '__main__':
