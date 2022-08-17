@@ -31,7 +31,7 @@ def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, 
 
     ## Prepare the VCF for upload. If the VCF is larger than the limit for Alissa API: split it.
     logger.info(f'Prepare the VCF(s) for upload to Alissa.')
-    vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size, logpath, reference)
+    vcfs = chunk_vcf.prepare_and_split_vcf(vcf_path, output_folder, size, reference, logpath)
     
     for path in vcfs:
         ## Upload the VCF to Alissa. If a datafile with the same name already exists in Alissa, fetch the internal ID.
