@@ -144,7 +144,7 @@ def prepare_and_split_vcf(vcf, outfolder, size, reference, logpath=None):
 @click.option('-s', '--size', required=True, type=int,
               help='Size in bytes. If the VCF exceed this size, it will be split into 2, 3 or 4 VCFs')
 @click.option('-ref', '--reference', required=True,
-              help='Reference genome (hg19 or hg38)')
+              help='Reference genome (hg19 or hg38)', type=click.Choice(['hg19', 'hg38'], case_sensitive=False))
 @click.option('--logpath', help='Path to log file to which logging is performed.')
 def main(vcf_path, output_folder, size, logpath, reference):
     chunks = prepare_and_split_vcf(vcf_path, output_folder, size, reference, logpath)
