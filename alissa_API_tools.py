@@ -68,7 +68,7 @@ def alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, 
               help='Path to a folder where the VCF will be written if the input VCF is larger than the size argument. In that case, files will be loaded to Alissa from that folder. Default: "/tmp".')
 @click.option('-i', '--production-instance', type=click.Choice(['production', 'test']) , default="test",
              help='What Alissa instance should be used. Default: "test".') #TODO invert the logic once testing is finished.
-@click.option('-ref', '--reference', help='Reference genome (hg19 or hg38). Default: hg19', type=click.Choice(['hg19', 'hg38'], case_sensitive=False, default = 'hg19'))
+@click.option('-ref', '--reference', help='Reference genome (hg19 or hg38). Default: hg19', type=click.Choice(['hg19', 'hg38'], case_sensitive=False), default = 'hg19')
 @click.option('--logpath', help='Path to log file to which logging is performed.')
 def main(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, reference, logpath):
      alissa_upload(accession, sex, alissa_folder, vcf_path, output_folder, size, name_in_vcf, production_instance, reference, logpath)
